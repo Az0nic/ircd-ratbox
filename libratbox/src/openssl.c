@@ -780,10 +780,6 @@ rb_ssl_start_connected(rb_fde_t *F, CNCB * callback, void *data, int timeout)
 	sconn->data = data;
 	sconn->callback = callback;
 	sconn->timeout = timeout;
-	F->connect = rb_malloc(sizeof(struct conndata));
-	F->connect->callback = callback;
-	F->connect->data = data;
-	F->type |= RB_FD_SSL;
 	F->ssl = SSL_new(F->sctx->ssl_ctx);
 
         if(F->ssl == NULL)
@@ -794,6 +790,11 @@ rb_ssl_start_connected(rb_fde_t *F, CNCB * callback, void *data, int timeout)
                 rb_ssl_connect_realcb(F, RB_ERROR_SSL, sconn);
                 return;
         }
+
+	F->connect = rb_malloc(sizeof(struct conndata));
+	F->connect->callback = callback;
+	F->connect->data = data;
+	F->type |= RB_FD_SSL;
 
 	SSL_set_fd((SSL *) F->ssl, F->fd);
 	rb_setup_ssl_cb(F);
