@@ -182,7 +182,7 @@
 #define NUMERIC_STR_481	/*** ERR_NOPRIVILEGES ***/	":Permission Denied - You're not an IRC operator"
 #define NUMERIC_STR_482	/*** ERR_CHANOPRIVSNEEDED ***/	"%s :You're not channel operator"
 #define NUMERIC_STR_483	/*** ERR_CANTKILLSERVER ***/	":You can't kill a server!"
-#define NUMERIC_STR_484	/*** ERR_ISCHANSERVICE ***/	"%s %s :Cannot kick or deop a network service"
+#define NUMERIC_STR_484	/*** ERR_ISCHANSERVICE ***/	":Cannot kick or deop a network service"
 #define NUMERIC_STR_489	/*** ERR_VOICENEEDED ***/	"%s :You're neither voiced nor channel operator"
 #define NUMERIC_STR_491	/*** ERR_NOOPERHOST ***/	":Only few of mere mortals may try to enter the twilight zone"
 #define NUMERIC_STR_501	/*** ERR_UMODEUNKNOWNFLAG ***/	":Unknown MODE flag"

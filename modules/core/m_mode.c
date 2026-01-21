@@ -1003,8 +1003,7 @@ chm_op(struct Client *source_p, struct Channel *chptr,
 #ifdef ENABLE_SERVICES
 		if(MyClient(source_p) && IsService(targ_p))
 		{
-			sendto_one(source_p, form_str(ERR_ISCHANSERVICE),
-				   me.name, source_p->name, targ_p->name, chptr->chname);
+			sendto_one_numeric(source_p, ERR_ISCHANSERVICE, form_str(ERR_ISCHANSERVICE));
 			return;
 		}
 #endif
@@ -1244,8 +1243,7 @@ chm_regonly(struct Client *source_p, struct Channel *chptr,
 	if(alevel != CHFL_CHANOP)
 	{
 		if(!(*errors & SM_ERR_NOOPS))
-			sendto_one(source_p, form_str(ERR_CHANOPRIVSNEEDED),
-				   me.name, source_p->name, chptr->chname);
+			sendto_one_numeric(source_p, ERR_CHANOPRIVSNEEDED, form_str(ERR_CHANOPRIVSNEEDED), chptr->chname);
 		*errors |= SM_ERR_NOOPS;
 		return;
 	}
