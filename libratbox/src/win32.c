@@ -305,7 +305,7 @@ rb_recv_fd_buf(rb_fde_t *F, void *data, size_t datasize, rb_fde_t **xF, unsigned
 	memcpy(&datalen, ptr, sizeof(size_t));
 	ptr = (void *)((uintptr_t)ptr + (uintptr_t)sizeof(size_t));
 	retlen = MYMIN(datalen, datasize);
-	memcpy(data, ptr, datalen);
+	memcpy(data, ptr, retlen);
 	return retlen;
 }
 
