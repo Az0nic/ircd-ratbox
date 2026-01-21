@@ -219,15 +219,15 @@ me_rsfnc(struct Client *client_p, struct Client *source_p, int parc, const char 
 	sendto_common_channels_local(target_p, ":%s!%s@%s NICK :%s",
 				     target_p->name, target_p->username, target_p->host, parv[2]);
 
-	add_history(target_p, 1);
+	whowas_add_history(target_p, 1);
 	sendto_server(NULL, NULL, CAP_TS6, NOCAPS, ":%s NICK %s :%" RBTT_FMT,
 		      use_id(target_p), parv[2], target_p->tsinfo);
 	sendto_server(NULL, NULL, NOCAPS, CAP_TS6, ":%s NICK %s :%" RBTT_FMT,
 		      target_p->name, parv[2], target_p->tsinfo);
 
-	del_from_hash(HASH_CLIENT, target_p->name, target_p);
+	hash_del(HASH_CLIENT, target_p->name, target_p);
 	strcpy(target_p->user->name, parv[2]);
-	add_to_hash(HASH_CLIENT, target_p->name, target_p);
+	hash_add(HASH_CLIENT, target_p->name, target_p);
 
 	monitor_signon(target_p);
 
