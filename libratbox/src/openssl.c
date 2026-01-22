@@ -300,16 +300,10 @@ rb_ssl_read_or_write(rw_t r_or_w, rb_fde_t *F, void *rbuf, const void *wbuf, siz
 	unsigned long err;
 	SSL *ssl = F->ssl;
 
-	switch(r_or_w)
-	{
-	        case DOREAD:
-	                ret = SSL_read(ssl, rbuf, (int)count);
-	                break;
-                case DOWRITE:
-                        ret = SSL_write(ssl, wbuf, (int)count);
-                        break;
-        }
-
+	if(r_or_w == DOREAD)
+		ret = SSL_read(ssl, rbuf, (int)count);
+	else
+		ret = SSL_write(ssl, wbuf, (int)count);
 
 	if(ret < 0)
 	{
