@@ -4,7 +4,7 @@
  *
  *  Copyright (C) 2001-2002 Adrian Chadd <adrian@creative.net.au>
  *  Copyright (C) 2002 Hybrid Development Team
- *  Copyright (C) 2002-2012 ircd-ratbox development team
+ *  Copyright (C) 2002-2026 ircd-ratbox development team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,8 +20,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *  USA
- *
- *  $Id: linebuf.c 29203 2015-12-09 19:15:15Z androsyn $
  */
 
 #include <libratbox_config.h>
@@ -242,11 +240,15 @@ rb_linebuf_copy_line(rb_buf_head_t * bufhead, rb_buf_line_t * bufline, char *dat
 		return -1;
 
 	/* This is the ~overflow case..This doesn't happen often.. */
-	if(cpylen > (BUF_DATA_SIZE - bufline->len - 1))
+	size_t avail = 0;
+	if(bufline->len < (BUF_DATA_SIZE - 1))
+		avail = BUF_DATA_SIZE - bufline->len - 1;
+
+	if(cpylen > avail)
 	{
 		size_t old_len = bufline->len;
 
-		cpylen = BUF_DATA_SIZE - bufline->len - 1;
+		cpylen = avail;
 		memcpy(bufch, ch, cpylen);
 		bufline->buf[BUF_DATA_SIZE - 1] = '\0';
 		bufch = bufline->buf + BUF_DATA_SIZE - 2;
@@ -319,12 +321,16 @@ rb_linebuf_copy_raw(rb_buf_head_t * bufhead, rb_buf_line_t * bufline, char *data
 		return -1;
 
 	/* This is the overflow case..This doesn't happen often.. */
-	if(cpylen > (BUF_DATA_SIZE - bufline->len - 1))
+	size_t avail = 0;
+	if(bufline->len < (BUF_DATA_SIZE - 1))
+		avail = BUF_DATA_SIZE - bufline->len - 1;
+
+	if(cpylen > avail)
 	{
 		size_t old_len = bufline->len;
 
-		clen = BUF_DATA_SIZE - (ssize_t)bufline->len - 1;
-		memcpy(bufch, ch, (size_t)clen);
+		clen = (ssize_t)avail;
+		memcpy(bufch, ch, avail);
 		bufline->buf[BUF_DATA_SIZE - 1] = '\0';
 		bufch = bufline->buf + BUF_DATA_SIZE - 2;
 		bufline->terminated = true;
@@ -891,5 +897,4 @@ unsigned int rb_linebuf_numlines(rb_buf_head_t *bufhead)
 {
 	return bufhead->numlines;
 }
-
 

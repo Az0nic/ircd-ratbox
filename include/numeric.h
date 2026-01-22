@@ -4,7 +4,7 @@
  *
  *  Copyright (C) 1990 Jarkko Oikarinen and University of Oulu, Co Center
  *  Copyright (C) 1996-2002 Hybrid Development Team
- *  Copyright (C) 2002-2015 ircd-ratbox development team
+ *  Copyright (C) 2002-2026 ircd-ratbox development team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,8 +20,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *  USA
- *
- *  $Id$
  */
 
 #ifndef INCLUDED_numeric_h
@@ -182,7 +180,7 @@
 #define NUMERIC_STR_481	/*** ERR_NOPRIVILEGES ***/	":Permission Denied - You're not an IRC operator"
 #define NUMERIC_STR_482	/*** ERR_CHANOPRIVSNEEDED ***/	"%s :You're not channel operator"
 #define NUMERIC_STR_483	/*** ERR_CANTKILLSERVER ***/	":You can't kill a server!"
-#define NUMERIC_STR_484	/*** ERR_ISCHANSERVICE ***/	"%s %s :Cannot kick or deop a network service"
+#define NUMERIC_STR_484	/*** ERR_ISCHANSERVICE ***/	":Cannot kick or deop a network service"
 #define NUMERIC_STR_489	/*** ERR_VOICENEEDED ***/	"%s :You're neither voiced nor channel operator"
 #define NUMERIC_STR_491	/*** ERR_NOOPERHOST ***/	":Only few of mere mortals may try to enter the twilight zone"
 #define NUMERIC_STR_501	/*** ERR_UMODEUNKNOWNFLAG ***/	":Unknown MODE flag"

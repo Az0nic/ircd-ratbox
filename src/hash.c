@@ -4,7 +4,7 @@
  *
  *  Copyright (C) 1990 Jarkko Oikarinen and University of Oulu, Co Center
  *  Copyright (C) 1996-2002 Hybrid Development Team
- *  Copyright (C) 2002-2012 ircd-ratbox development team
+ *  Copyright (C) 2002-2026 ircd-ratbox development team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,8 +20,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *  USA
- *
- *  $Id$
  */
 
 #include <stdinc.h>
@@ -119,14 +117,13 @@ static uint32_t
 fnv_hash_len_data(const unsigned char *s, unsigned int bits, size_t len)
 {
 	uint32_t h = FNV1_32_INIT;
-	bits = 32 - bits;
 	const unsigned char *x = s + len;
 	while(s < x)
 	{
 		h ^= *s++;
 		h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
 	}
-	h = (h >> bits) ^ (h & ((2 ^ bits) - 1));
+	h = (h >> (32 - bits)) ^ (h & ((1U << bits) - 1));
 	return h;
 }
 
@@ -134,13 +131,12 @@ static uint32_t
 fnv_hash_upper(const unsigned char *s, unsigned int bits, size_t unused)
 {
 	uint32_t h = FNV1_32_INIT;
-	bits = 32 - bits;
 	while(*s)
 	{
 		h ^= ToUpper(*s++);
 		h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
 	}
-	h = (h >> bits) ^ (h & ((2 ^ bits) - 1));
+	h = (h >> (32 - bits)) ^ (h & ((1U << bits) - 1));
 	return h;
 }
 
@@ -148,13 +144,12 @@ static uint32_t
 fnv_hash(const unsigned char *s, unsigned int bits, size_t unused)
 {
 	uint32_t h = FNV1_32_INIT;
-	bits = 32 - bits;
 	while(*s)
 	{
 		h ^= *s++;
 		h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
 	}
-	h = (h >> bits) ^ (h & ((2 ^ bits) - 1));
+	h = (h >> (32 - bits)) ^ (h & ((1U << bits) - 1));
 	return h;
 }
 
@@ -164,14 +159,13 @@ static uint32_t
 fnv_hash_len(const unsigned char *s, unsigned int bits, size_t len)
 {
 	uint32_t h = FNV1_32_INIT;
-	bits = 32 - bits;
 	const unsigned char *x = s + len;
-	while(*s && s < x)
+	while(s < x && *s)
 	{
 		h ^= *s++;
 		h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
 	}
-	h = (h >> bits) ^ (h & ((2 ^ bits) - 1));
+	h = (h >> (32 - bits)) ^ (h & ((1U << bits) - 1));
 	return h;
 }
 #endif
@@ -180,14 +174,13 @@ static uint32_t
 fnv_hash_upper_len(const unsigned char *s, unsigned int bits, size_t len)
 {
 	uint32_t h = FNV1_32_INIT;
-	bits = 32 - bits;
 	const unsigned char *x = s + len;
-	while(*s && s < x)
+	while(s < x && *s)
 	{
 		h ^= ToUpper(*s++);
 		h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
 	}
-	h = (h >> bits) ^ (h & ((2 ^ bits) - 1));
+	h = (h >> (32 - bits)) ^ (h & ((1U << bits) - 1));
 	return h;
 }
 
@@ -267,20 +260,26 @@ static inline uint32_t do_hfunc(hash_f *hf, const void *hashindex, size_t hashle
 	return hf->func((unsigned const char *)hashindex, hf->hashbits, hashlen);
 }
 
+
 static inline int
-hash_do_cmp(hash_f *hfunc, const void *x, const void *y, size_t len)
+hash_do_cmp(hash_f *hfunc, hash_node *hnode, const void *hashindex, size_t len)
 {
+	if(hnode->keylen != len)
+		return -1;
+	
 	switch (hfunc->cmptype)
 	{
+	/* the irccmp and strcmp types assume there is a \0 delimited string in both buffers */
 	case CMP_IRCCMP:
-		return irccmp(x, y);
+		return irccmp(hnode->key, hashindex);
 	case CMP_STRCMP:
-		return strcmp(x, y);
+		return strcmp(hnode->key, hashindex);
 	case CMP_MEMCMP:
-		return memcmp(x, y, len);
+		return memcmp(hnode->key, hashindex, len);
 	}
 	return -1;
 }
+
 
 void
 hash_free_list(rb_dlink_list * table)
@@ -322,7 +321,7 @@ hash_find_list_len(hash_f *hf, const void *hashindex, size_t size)
 	RB_DLINK_FOREACH(ptr, bucket->head)
 	{
 		hash_node *hnode = ptr->data;
-		if(hash_do_cmp(hf, hashindex, hnode->key, hashlen) == 0)
+		if(hash_do_cmp(hf, hnode, hashindex, size) == 0)
 			rb_dlinkAddAlloc(hnode->data, results);
 	}
 	if(rb_dlink_list_length(results) == 0)
@@ -369,7 +368,7 @@ hash_find_len(hash_f *hf, const void *hashindex, size_t size)
 	{
 		hash_node *hnode = ptr->data;
 
-		if(hash_do_cmp(hf, hashindex, hnode->key, hashlen) == 0)
+		if(hash_do_cmp(hf, hnode, hashindex, size) == 0)
 			return hnode;
 	}
 	return NULL;
@@ -558,16 +557,6 @@ hash_walkall(hash_f *hf, hash_walk_cb * walk_cb, void *walk_data)
 		}
 	}
 }
-
-rb_dlink_list
-hash_get_channel_block(int i)
-{
-	/* XXX FIX ME */
-	static rb_dlink_list moo;
-	return moo;
-//	return *channelTable[i];
-}
-
 
 rb_dlink_list *
 hash_get_tablelist(hash_f *hf)

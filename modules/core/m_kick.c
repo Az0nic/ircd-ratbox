@@ -4,7 +4,7 @@
  *
  *  Copyright (C) 1990 Jarkko Oikarinen and University of Oulu, Co Center
  *  Copyright (C) 1996-2002 Hybrid Development Team
- *  Copyright (C) 2002-2012 ircd-ratbox development team
+ *  Copyright (C) 2002-2026 ircd-ratbox development team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,8 +20,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *  USA
- *
- *  $Id$
  */
 
 #include <stdinc.h>
@@ -154,8 +152,7 @@ m_kick(struct Client *client_p, struct Client *source_p, int parc, const char *p
 #ifdef ENABLE_SERVICES
 		if(MyClient(source_p) && IsService(who))
 		{
-			sendto_one(source_p, form_str(ERR_ISCHANSERVICE),
-				   me.name, source_p->name, who->name, chptr->chname);
+			sendto_one_numeric(source_p, ERR_ISCHANSERVICE, form_str(ERR_ISCHANSERVICE));
 			return 0;
 		}
 #endif
