@@ -117,14 +117,13 @@ static uint32_t
 fnv_hash_len_data(const unsigned char *s, unsigned int bits, size_t len)
 {
 	uint32_t h = FNV1_32_INIT;
-	bits = 32 - bits;
 	const unsigned char *x = s + len;
 	while(s < x)
 	{
 		h ^= *s++;
 		h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
 	}
-	h = (h >> bits) ^ (h & ((2 ^ bits) - 1));
+	h = (h >> (32 - bits)) ^ (h & ((1U << bits) - 1));
 	return h;
 }
 
@@ -132,13 +131,12 @@ static uint32_t
 fnv_hash_upper(const unsigned char *s, unsigned int bits, size_t unused)
 {
 	uint32_t h = FNV1_32_INIT;
-	bits = 32 - bits;
 	while(*s)
 	{
 		h ^= ToUpper(*s++);
 		h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
 	}
-	h = (h >> bits) ^ (h & ((2 ^ bits) - 1));
+	h = (h >> (32 - bits)) ^ (h & ((1U << bits) - 1));
 	return h;
 }
 
@@ -146,13 +144,12 @@ static uint32_t
 fnv_hash(const unsigned char *s, unsigned int bits, size_t unused)
 {
 	uint32_t h = FNV1_32_INIT;
-	bits = 32 - bits;
 	while(*s)
 	{
 		h ^= *s++;
 		h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
 	}
-	h = (h >> bits) ^ (h & ((2 ^ bits) - 1));
+	h = (h >> (32 - bits)) ^ (h & ((1U << bits) - 1));
 	return h;
 }
 
@@ -162,14 +159,13 @@ static uint32_t
 fnv_hash_len(const unsigned char *s, unsigned int bits, size_t len)
 {
 	uint32_t h = FNV1_32_INIT;
-	bits = 32 - bits;
 	const unsigned char *x = s + len;
 	while(*s && s < x)
 	{
 		h ^= *s++;
 		h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
 	}
-	h = (h >> bits) ^ (h & ((2 ^ bits) - 1));
+	h = (h >> (32 - bits)) ^ (h & ((1U << bits) - 1));
 	return h;
 }
 #endif
@@ -178,14 +174,13 @@ static uint32_t
 fnv_hash_upper_len(const unsigned char *s, unsigned int bits, size_t len)
 {
 	uint32_t h = FNV1_32_INIT;
-	bits = 32 - bits;
 	const unsigned char *x = s + len;
 	while(*s && s < x)
 	{
 		h ^= ToUpper(*s++);
 		h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
 	}
-	h = (h >> bits) ^ (h & ((2 ^ bits) - 1));
+	h = (h >> (32 - bits)) ^ (h & ((1U << bits) - 1));
 	return h;
 }
 
