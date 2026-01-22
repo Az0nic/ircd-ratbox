@@ -260,20 +260,26 @@ static inline uint32_t do_hfunc(hash_f *hf, const void *hashindex, size_t hashle
 	return hf->func((unsigned const char *)hashindex, hf->hashbits, hashlen);
 }
 
+
 static inline int
-hash_do_cmp(hash_f *hfunc, const void *x, const void *y, size_t len)
+hash_do_cmp(hash_f *hfunc, hash_node *hnode, const void *hashindex, size_t len)
 {
+	if(hnode->keylen != len)
+		return -1;
+	
 	switch (hfunc->cmptype)
 	{
+	/* the irccmp and strcmp types assume there is a \0 delimited string in both buffers */
 	case CMP_IRCCMP:
-		return irccmp(x, y);
+		return irccmp(hnode->key, hashindex);
 	case CMP_STRCMP:
-		return strcmp(x, y);
+		return strcmp(hnode->key, hashindex);
 	case CMP_MEMCMP:
-		return memcmp(x, y, len);
+		return memcmp(hnode->key, hashindex, len);
 	}
 	return -1;
 }
+
 
 void
 hash_free_list(rb_dlink_list * table)
@@ -315,7 +321,7 @@ hash_find_list_len(hash_f *hf, const void *hashindex, size_t size)
 	RB_DLINK_FOREACH(ptr, bucket->head)
 	{
 		hash_node *hnode = ptr->data;
-		if(hash_do_cmp(hf, hashindex, hnode->key, hashlen) == 0)
+		if(hash_do_cmp(hf, hnode, hashindex, size) == 0)
 			rb_dlinkAddAlloc(hnode->data, results);
 	}
 	if(rb_dlink_list_length(results) == 0)
@@ -362,7 +368,7 @@ hash_find_len(hash_f *hf, const void *hashindex, size_t size)
 	{
 		hash_node *hnode = ptr->data;
 
-		if(hash_do_cmp(hf, hashindex, hnode->key, hashlen) == 0)
+		if(hash_do_cmp(hf, hnode, hashindex, size) == 0)
 			return hnode;
 	}
 	return NULL;
@@ -551,16 +557,6 @@ hash_walkall(hash_f *hf, hash_walk_cb * walk_cb, void *walk_data)
 		}
 	}
 }
-
-rb_dlink_list
-hash_get_channel_block(int i)
-{
-	/* XXX FIX ME */
-	static rb_dlink_list moo;
-	return moo;
-//	return *channelTable[i];
-}
-
 
 rb_dlink_list *
 hash_get_tablelist(hash_f *hf)
