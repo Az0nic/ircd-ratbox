@@ -1258,7 +1258,6 @@ main(int argc, char **argv)
 	pipefd = atoi(s_pipe);
 	ppid = atoi(s_pid);
 
-#ifndef _WIN32
 	int x;
 
 	for(x = 0; x < maxfd; x++)
@@ -1279,7 +1278,6 @@ main(int argc, char **argv)
 		if(x > 2)
 			close(x);
 	}
-#endif
 #endif
 	setup_signals();
 	rb_lib_init(NULL, NULL, NULL, 0, maxfd);
@@ -1310,18 +1308,15 @@ main(int argc, char **argv)
 }
 
 
-#ifndef _WIN32
 static void
 dummy_handler(int sig)
 {
 	return;
 }
-#endif
 
 static void
 setup_signals(void)
 {
-#ifndef _WIN32
 	struct sigaction act;
 
 	act.sa_flags = 0;
@@ -1349,5 +1344,4 @@ setup_signals(void)
 
 	act.sa_handler = dummy_handler;
 	sigaction(SIGALRM, &act, NULL);
-#endif
 }

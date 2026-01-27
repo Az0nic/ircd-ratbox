@@ -340,6 +340,7 @@ ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_cv_have_struct_mallinfo = @ac_cv_have_struct_mallinfo@
+ac_cv_have_struct_mallinfo2 = @ac_cv_have_struct_mallinfo2@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
@@ -396,7 +397,6 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-
 AUTOMAKE_OPTIONS = foreign subdir-objects
 @BUILD_SQLITE_TRUE@SUBDIRS = sqlite3
 @BUILD_SQLITE_TRUE@@sqlite3_CFLAGS@ = "-Isqlite3"

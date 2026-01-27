@@ -354,6 +354,7 @@ ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_cv_have_struct_mallinfo = @ac_cv_have_struct_mallinfo@
+ac_cv_have_struct_mallinfo2 = @ac_cv_have_struct_mallinfo2@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@

@@ -108,13 +108,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(libexecdir)"
 PROGRAMS = $(libexec_PROGRAMS)
-am__resolver_SOURCES_DIST = resolver.c res.c reslib.c getaddrinfo.c \
-	getnameinfo.c reslist.c
-@MINGW_FALSE@am_resolver_OBJECTS = resolver.$(OBJEXT) res.$(OBJEXT) \
-@MINGW_FALSE@	reslib.$(OBJEXT)
-@MINGW_TRUE@am_resolver_OBJECTS = resolver.$(OBJEXT) res.$(OBJEXT) \
-@MINGW_TRUE@	reslib.$(OBJEXT) getaddrinfo.$(OBJEXT) \
-@MINGW_TRUE@	getnameinfo.$(OBJEXT) reslist.$(OBJEXT)
+am_resolver_OBJECTS = resolver.$(OBJEXT) res.$(OBJEXT) \
+	reslib.$(OBJEXT)
 resolver_OBJECTS = $(am_resolver_OBJECTS)
 resolver_DEPENDENCIES = ../libratbox/src/libratbox.la
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -156,7 +151,7 @@ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(resolver_SOURCES)
-DIST_SOURCES = $(am__resolver_SOURCES_DIST)
+DIST_SOURCES = $(resolver_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -300,6 +295,7 @@ ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_cv_have_struct_mallinfo = @ac_cv_have_struct_mallinfo@
+ac_cv_have_struct_mallinfo2 = @ac_cv_have_struct_mallinfo2@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
@@ -358,8 +354,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CPPFLAGS = -I../include -I. -I../libratbox/include 
 AM_CFLAGS = $(WARNFLAGS)
-@MINGW_FALSE@resolver_SOURCES = resolver.c res.c reslib.c
-@MINGW_TRUE@resolver_SOURCES = resolver.c res.c reslib.c getaddrinfo.c getnameinfo.c reslist.c
+resolver_SOURCES = resolver.c res.c reslib.c
 resolver_LDADD = ../libratbox/src/libratbox.la
 all: all-am
 
@@ -454,11 +449,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getaddrinfo.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getnameinfo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/res.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reslib.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reslist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/resolver.Po@am__quote@
 
 .c.o:

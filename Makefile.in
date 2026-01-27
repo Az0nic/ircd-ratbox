@@ -220,7 +220,7 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/install-mod.sh.in \
 	$(top_srcdir)/libltdl/config/depcomp \
 	$(top_srcdir)/libltdl/config/install-sh \
 	$(top_srcdir)/libltdl/config/ltmain.sh \
-	$(top_srcdir)/libltdl/config/missing ChangeLog INSTALL compile \
+	$(top_srcdir)/libltdl/config/missing INSTALL compile \
 	config.guess config.sub depcomp install-sh \
 	libltdl/config/compile libltdl/config/config.guess \
 	libltdl/config/config.sub libltdl/config/depcomp \
@@ -385,6 +385,7 @@ ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_cv_have_struct_mallinfo = @ac_cv_have_struct_mallinfo@
+ac_cv_have_struct_mallinfo2 = @ac_cv_have_struct_mallinfo2@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
