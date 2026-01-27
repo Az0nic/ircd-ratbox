@@ -137,10 +137,12 @@ rb_dirname(const char *path)
 }
 
 
-size_t rb_zstring_serialized(rb_zstring_t *zs, void **buf, size_t *buflen)
+ssize_t rb_zstring_serialized(rb_zstring_t *zs, void **buf, size_t *buflen)
 {
         uint8_t *p;
-        size_t alloclen = sizeof(uint16_t) + zs->len;
+        ssize_t alloclen;
+        
+        alloclen = sizeof(uint16_t) + zs->len;
 
         p = rb_malloc(alloclen);          
         memcpy(p, &zs->len, sizeof(uint16_t));
@@ -150,10 +152,13 @@ size_t rb_zstring_serialized(rb_zstring_t *zs, void **buf, size_t *buflen)
         return alloclen;
 }
 
-size_t rb_zstring_deserialize(rb_zstring_t *zs, void *buf)
+ssize_t rb_zstring_deserialize(rb_zstring_t *zs, void *buf)
 {
 	uint8_t *p = (uint8_t *)buf;
 
+	if(zs == NULL || p == NULL)
+		return -1;
+		
 	memcpy(&zs->len, p, sizeof(uint16_t));
 	p += sizeof(uint16_t);
 	if(zs->len == 0)
@@ -183,12 +188,15 @@ rb_zstring_t *rb_zstring_from_c_len(const char *buf, size_t len)
 {
 	rb_zstring_t *zs;
 	
-	if(len > UINT16_MAX-1)
+	if(len > UINT16_MAX)
 		return NULL;
-		
+
 	zs = rb_zstring_alloc();
-	zs->alloclen = zs->len = (uint16_t)len;
-	zs->alloclen = (uint16_t)len;
+
+	if(zs == NULL)
+		return NULL;
+	
+	zs->alloclen = zs->len + (uint16_t)len;
 	if(zs->alloclen < 128)
 		zs->alloclen = 128;
 	zs->data = rb_malloc(zs->alloclen);
@@ -201,8 +209,10 @@ rb_zstring_t *rb_zstring_from_c(const char *buf)
 	return rb_zstring_from_c_len(buf, strlen(buf));
 }
 
-size_t rb_zstring_len(rb_zstring_t *zs)
+ssize_t rb_zstring_len(rb_zstring_t *zs)
 {
+	if(zs == NULL)
+		return -1;
 	return zs->len;
 } 
 
@@ -258,8 +268,10 @@ char *rb_zstring_to_c_alloc(rb_zstring_t *zs)
 	return p;
 }
 
-size_t rb_zstring_to_ptr(rb_zstring_t *zs, void **ptr)
+ssize_t rb_zstring_to_ptr(rb_zstring_t *zs, void **ptr)
 {
+	if(zs == NULL || ptr == NULL)
+		return -1;
 	*ptr = (void *)zs->data;
 	return zs->len;
 } 
