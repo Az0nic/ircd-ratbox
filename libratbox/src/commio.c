@@ -147,7 +147,6 @@ rb_fd_hack(int *fd)
 static void
 rb_close_all(void)
 {
-#ifndef _WIN32
 	int i;
 
 	/* XXX someone tell me why we care about 4 fd's ? */
@@ -156,7 +155,6 @@ rb_close_all(void)
 	{
 		close(i);
 	}
-#endif
 }
 
 /*
@@ -629,7 +627,6 @@ rb_socketpair(int family, int sock_type, int proto, rb_fde_t **F1, rb_fde_t **F2
 int
 rb_pipe(rb_fde_t **F1, rb_fde_t **F2, const char *desc)
 {
-#ifndef _WIN32
 	int fd[2];
 	if(number_fd >= rb_maxconnections)
 	{
@@ -661,12 +658,6 @@ rb_pipe(rb_fde_t **F1, rb_fde_t **F2, const char *desc)
 
 
 	return 0;
-#else
-	/* Its not a pipe..but its selectable.	I'll take dirty hacks
-	 * for $500 Alex.
-	 */
-	return rb_socketpair(AF_INET, SOCK_STREAM, 0, F1, F2, desc);
-#endif
 }
 
 /*
@@ -794,18 +785,7 @@ void
 rb_fdlist_init(int closeall, int maxfds)
 {
 	static int initialized = 0;
-#ifdef _WIN32
-	WSADATA wsaData;
-	int err;
-	int vers = MAKEWORD(2, 0);
 
-	err = WSAStartup(vers, &wsaData);
-	if(err != 0)
-	{
-		rb_lib_die("WSAStartup failed");
-	}
-
-#endif
 	if(!initialized)
 	{
 		rb_maxconnections = maxfds;
@@ -886,16 +866,7 @@ rb_close(rb_fde_t *F)
 	}
 
 	number_fd--;
-
-#ifdef _WIN32
-	if(type & (RB_FD_SOCKET | RB_FD_PIPE))
-	{
-		closesocket(fd);
-		return;
-	}
-	else
-#endif
-		close(fd);
+	close(fd);
 }
 
 
@@ -1041,7 +1012,7 @@ rb_write(rb_fde_t *F, const void *buf, size_t count)
 	return write(F->fd, buf, count);
 }
 
-#if defined(HAVE_SSL) || defined(WIN32) || !defined(HAVE_WRITEV)
+#if defined(HAVE_SSL) || !defined(HAVE_WRITEV)
 static ssize_t
 rb_fake_writev(rb_fde_t *F, const struct rb_iovec *vp, int vpcount)
 {
@@ -1065,7 +1036,7 @@ rb_fake_writev(rb_fde_t *F, const struct rb_iovec *vp, int vpcount)
 }
 #endif
 
-#if defined(WIN32) || !defined(HAVE_WRITEV)
+#if !defined(HAVE_WRITEV)
 ssize_t
 rb_writev(rb_fde_t *F, struct rb_iovec * vecount, int count)
 {
@@ -1609,12 +1580,6 @@ rb_inet_socketpair_udp(rb_fde_t **newF1, rb_fde_t **newF2)
 	*newF2 = F[1];
 	return 0;
 
-#ifdef _WIN32
-#ifndef ECONNABORTED
-#define	ECONNABORTED WSAECONNABORTED
-#endif
-#endif
-
       abort_failed:
 	rb_get_errno();
 	errno = ECONNABORTED;
@@ -2049,7 +2014,7 @@ rb_ignore_errno(int error)
 }
 
 
-#if defined(HAVE_SENDMSG) && !defined(WIN32)
+#if defined(HAVE_SENDMSG) 
 ssize_t
 rb_recv_fd_buf(rb_fde_t *F, void *data, size_t datasize, rb_fde_t **xF, unsigned int nfds)
 {
@@ -2166,7 +2131,6 @@ rb_send_fd_buf(rb_fde_t *xF, rb_fde_t **F, unsigned int count, void *data, size_
 
 }
 #else
-#ifndef _WIN32
 int
 rb_recv_fd_buf(rb_fde_t *F, void *data, size_t datasize, rb_fde_t **xF, int nfds)
 {
@@ -2180,5 +2144,4 @@ rb_send_fd_buf(rb_fde_t *xF, rb_fde_t **F, int count, void *data, size_t datasiz
 	errno = ENOSYS;
 	return -1;
 }
-#endif
 #endif

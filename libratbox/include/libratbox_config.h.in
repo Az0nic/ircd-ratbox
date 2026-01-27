@@ -231,9 +231,6 @@
 /* Define to 1 if you have the `vsnprintf' function. */
 #undef HAVE_VSNPRINTF
 
-/* Define to 1 if you are on windows */
-#undef HAVE_WIN32
-
 /* Have WINSOCK_H */
 #undef HAVE_WINSOCK2_H
 
@@ -252,8 +249,7 @@
 /* Have WS2TCPIP_H */
 #undef HAVE_WS2TCPIP_H
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #undef LT_OBJDIR
 
 /* This is a MinGW system */

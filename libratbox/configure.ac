@@ -10,7 +10,7 @@ AUTOMAKE_OPTIONS = 1.10
 
 saved_CFLAGS="$CFLAGS"
 dnl Sneaky way to get an Id tag into the configure script
-AC_COPYRIGHT([$Id: configure.ac 29205 2015-12-09 20:08:43Z androsyn $])
+dnl AC_COPYRIGHT([$Id: configure.ac 29205 2015-12-09 20:08:43Z androsyn $])
 AC_INIT([libratbox],[devel])
 
 
@@ -483,18 +483,6 @@ else
 fi
 
 
-if test "$is_mingw" = "yes"; then
-	AC_DEFINE(HAVE_WIN32, [1], [Define to 1 if you are on windows])
-fi
-
-
-
-
-
-
-
-
-
 
 dnl Debug-related options
 dnl =====================
@@ -590,14 +578,6 @@ fi
 
 echo "#define RB_SIZEOF_TIME_T $rb_sizeof_time_t" >> $outfile
 echo "#define RB_SIZEOF_LONG $rb_sizeof_long" >> $outfile
-
-if test "x$rb_windows_h" = "xyes"; then
-	echo '#define WIN32_LEAN_AND_MEAN 1' >> $outfile
-	echo '#include <windows.h>' >> $outfile
-	echo '#include <winsock2.h>' >> $outfile
-	echo '#include <iphlpapi.h>' >> $outfile
-	echo '#include <ws2tcpip.h>' >> $outfile
-fi
 
 if test "x$rb_alloca_h" = "xyes"; then
 	echo '#define RB_HAVE_ALLOCA_H 1' >> $outfile

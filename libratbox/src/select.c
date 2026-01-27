@@ -27,19 +27,12 @@
 #include "ratbox_lib.h"
 #include "commio-int.h"
 
-#if defined(HAVE_SELECT) || defined(_WIN32)
-
-#ifdef _WIN32
-#define MY_FD_SET(x, y) FD_SET((SOCKET)x, y)
-#define MY_FD_CLR(x, y) FD_CLR((SOCKET)x, y)
-#else
-#define MY_FD_SET(x, y) FD_SET(x, y)
-#define MY_FD_CLR(x, y) FD_CLR(x, y)
-#endif
-
 #ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
 #endif
+
+#if defined(HAVE_SELECT)
+
 /*
  * Note that this is only a single list - multiple lists is kinda pointless
  * under select because the list size is a function of the highest FD :-)
@@ -74,12 +67,12 @@ select_update_selectfds(rb_fde_t *F, short event, PF * handler)
 	{
 		if(handler)
 		{
-			MY_FD_SET(F->fd, &select_readfds);
+			FD_SET(F->fd, &select_readfds);
 			F->pflags |= RB_SELECT_READ;
 		}
 		else
 		{
-			MY_FD_CLR(F->fd, &select_readfds);
+			FD_CLR(F->fd, &select_readfds);
 			F->pflags &= ~RB_SELECT_READ;
 		}
 	}
@@ -88,12 +81,12 @@ select_update_selectfds(rb_fde_t *F, short event, PF * handler)
 	{
 		if(handler)
 		{
-			MY_FD_SET(F->fd, &select_writefds);
+			FD_SET(F->fd, &select_writefds);
 			F->pflags |= RB_SELECT_WRITE;
 		}
 		else
 		{
-			MY_FD_CLR(F->fd, &select_writefds);
+			FD_CLR(F->fd, &select_writefds);
 			F->pflags &= ~RB_SELECT_WRITE;
 		}
 	}

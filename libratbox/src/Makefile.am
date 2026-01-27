@@ -11,7 +11,6 @@ version.c: version.c.SH ../CREDITS
 
 libratbox_la_SOURCES =			\
 	unix.c				\
-	win32.c				\
 	crypt.c				\
 	commio.c			\
 	openssl.c			\

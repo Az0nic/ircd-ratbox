@@ -32,7 +32,6 @@
 #include "ratbox_lib.h"
 
 #if !defined(HAVE_OPENSSL) && !defined(HAVE_GNUTLS) && !defined(HAVE_MBEDTLS) && !defined(HAVE_ARC4RANDOM)
-
 #include <arc4random.h>
 #include <errno.h>
 
@@ -106,66 +105,37 @@ arc4_stir(struct arc4_stream *as)
 	arc4_addrandom(as, (void *)&tv.tv_usec, sizeof(&tv.tv_usec));
 
 #if defined(HAVE_GETRUSAGE) && defined(RUSAGE_SELF)
-	{
-		struct rusage buf;
-		getrusage(RUSAGE_SELF, &buf);
-		arc4_addrandom(as, (void *)&buf, sizeof(buf));
-	memset(&buf, 0, sizeof(buf));}
+	struct rusage buf;
+	getrusage(RUSAGE_SELF, &buf);
+	arc4_addrandom(as, (void *)&buf, sizeof(buf));
+	memset(&buf, 0, sizeof(buf));
 #endif
 
-#if !defined(_WIN32)
+	uint8_t rnd[128];
+	int fd;
+	ssize_t total = 0;
+	fd = open("/dev/urandom", O_RDONLY);
+	if(fd != -1)
 	{
-		uint8_t rnd[128];
-		int fd;
-		ssize_t total = 0;
-		fd = open("/dev/urandom", O_RDONLY);
-		if(fd != -1)
+		while(total < (ssize_t)sizeof(rnd))
 		{
-			while(total < (ssize_t)sizeof(rnd))
+			ssize_t ret = read(fd, rnd + total, sizeof(rnd) - total);
+			if(ret > 0)
 			{
-				ssize_t ret = read(fd, rnd + total, sizeof(rnd) - total);
-				if(ret > 0)
-				{
-					total += ret;
-					continue;
-				}
-				if(ret == 0)
-					break;
-				if(errno == EINTR)
-					continue;
+				total += ret;
+				continue;
+			}
+			if(ret == 0)
 				break;
-			}
-			close(fd);
-			if(total > 0)
-				arc4_addrandom(as, (void *)rnd, (int)total);
-			memset(&rnd, 0, sizeof(rnd));
+			if(errno == EINTR)
+				continue;
+			break;
 		}
-
+		close(fd);
+		if(total > 0)
+			arc4_addrandom(as, (void *)rnd, (int)total);
+		memset(&rnd, 0, sizeof(rnd));
 	}
-#else
-	{
-		LARGE_INTEGER performanceCount;
-		if(QueryPerformanceCounter(&performanceCount))
-		{
-			arc4_addrandom(as, (void *)&performanceCount, sizeof(performanceCount));
-		}
-		HMODULE lib = LoadLibrary("ADVAPI32.DLL");
-		if(lib)
-		{
-			uint8_t rnd[128];
-			BOOLEAN(APIENTRY * pfn) (void *, ULONG) =
-				(BOOLEAN(APIENTRY *) (void *, ULONG))GetProcAddress(lib,
-										    "SystemFunction036");
-			if(pfn)
-			{
-				if(pfn(rnd, sizeof(rnd)) == TRUE)
-					arc4_addrandom(as, (void *)rnd, sizeof(rnd));
-				memset(&rnd, 0, sizeof(rnd));
-			}
-		}
-	}
-#endif
-
 
 	/*
 	 * Throw away the first N words of output, as suggested in the
