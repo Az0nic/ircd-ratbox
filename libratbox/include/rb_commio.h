@@ -76,11 +76,7 @@ typedef enum  _rb_tls_ver
 #define RB_FD_NONE		0x01
 #define RB_FD_FILE		0x02
 #define RB_FD_SOCKET		0x04
-#ifndef _WIN32
 #define RB_FD_PIPE		0x08
-#else
-#define RB_FD_PIPE		RB_FD_SOCKET
-#endif
 #define	RB_FD_LISTEN		0x10
 #define RB_FD_SSL		0x20
 #define RB_FD_UNKNOWN		0x40
@@ -115,6 +111,7 @@ void rb_note(rb_fde_t *, const char *);
 #define RB_SSL_CERTFP_LEN 32
 
 int rb_set_nb(rb_fde_t *);
+int rb_set_cloexec(rb_fde_t *, bool);
 int rb_set_buffers(rb_fde_t *, int);
 
 int rb_get_sockerr(rb_fde_t *);
@@ -151,7 +148,37 @@ const char *rb_inet_ntop(int af, void *src, char *dst, rb_socklen_t len);
 
 
 int rb_getmaxconnect(void);
-int rb_ignore_errno(int);
+
+
+static inline int
+rb_ignore_errno(int error)
+{
+	switch (error)
+	{
+#ifdef EINPROGRESS
+	case EINPROGRESS:
+#endif
+#if defined EWOULDBLOCK
+	case EWOULDBLOCK:
+#endif
+#if defined(EAGAIN) && (EWOULDBLOCK != EAGAIN)
+	case EAGAIN:
+#endif
+#ifdef EINTR
+	case EINTR:
+#endif
+#ifdef ERESTART
+	case ERESTART:
+#endif
+#ifdef ENOBUFS
+	case ENOBUFS:
+#endif
+		return 1;
+	default:
+		break;
+	}
+	return 0;
+}
 
 /* Generic wrappers */
 void rb_setselect(rb_fde_t *, unsigned int type, PF * handler, void *client_data);

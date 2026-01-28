@@ -10,7 +10,7 @@ AUTOMAKE_OPTIONS = 1.10
 
 saved_CFLAGS="$CFLAGS"
 dnl Sneaky way to get an Id tag into the configure script
-AC_COPYRIGHT([$Id: configure.ac 29205 2015-12-09 20:08:43Z androsyn $])
+dnl AC_COPYRIGHT([$Id: configure.ac 29205 2015-12-09 20:08:43Z androsyn $])
 AC_INIT([libratbox],[devel])
 
 
@@ -127,36 +127,6 @@ done
 AC_SUBST(WARNFLAGS)
 
 LIBTOOL="$LIBTOOL --silent"
-
-case "$host_os" in
-*cygwin*)
-     AC_DEFINE_UNQUOTED(CYGWIN,1,[This is a Cygwin system])
-     AC_DEFINE_UNQUOTED(WINDOWS,1,[This is a Windows system])
-     ;;
-*mingw*)
-     AC_DEFINE_UNQUOTED(MINGW,1,[This is a MinGW system])
-     AC_DEFINE_UNQUOTED(WINDOWS,1,[This is a Windows system])
-     AC_CHECK_HEADER(windows.h, , [AC_MSG_ERROR([** MinGW and no windows.h.  I give up.])])
-     AC_CHECK_HEADER(winsock2.h, , [AC_MSG_ERROR([** MinGW and no winsock2.h.  I give up.])])
-     AC_CHECK_HEADER(ws2tcpip.h, , [AC_MSG_ERROR([** MinGW and no winsock2.h.  I give up.])])
-     AC_DEFINE_UNQUOTED(HAVE_WS2TCPIP_H, 1, [Have WS2TCPIP_H])
-     AC_DEFINE_UNQUOTED(HAVE_WINSOCK2_H, 1, [Have WINSOCK_H])
-     AC_DEFINE_UNQUOTED(HAVE_WINSOCK_H, 1, [Have WINSOCK_H])
-     LIBS="$LIBS -lws2_32 -liphlpapi"
-     is_mingw="yes"
-     ;;
-*interix*)
-     CPPFLAGS="$CFLAGS -D_ALL_SOURCE -D_XOPEN_SOURCE=500"
-     ;;
-*solaris*)
-     CPPFLAGS="$CFLAGS -D_POSIX_PTHREAD_SEMANTICS -D_XPG4_2"
-     ;;
-*)
-     ;;
-esac
-
-AM_CONDITIONAL([MINGW], [test "$is_mingw" = "yes"])
-
 
 # backwards support for IRC_CFLAGS
 CFLAGS="$IRC_CFLAGS $CFLAGS -Wall"
@@ -325,7 +295,7 @@ AC_CHECK_TYPE([sa_family_t], [],
 
 
 dnl check for various functions...
-AC_CHECK_FUNCS([snprintf vsnprintf socketpair gettimeofday writev sendmsg gmtime_r strtok_r usleep posix_spawn strdup strndup strlcpy strlcat strnlen fstat signalfd select poll kevent port_create epoll_ctl arc4random getrusage timerfd_create])	
+AC_CHECK_FUNCS([snprintf vsnprintf socketpair gettimeofday writev sendmsg gmtime_r strtok_r usleep posix_spawn strdup strndup strlcpy strlcat strnlen fstat signalfd select poll kevent kqueue1 port_create epoll_ctl epoll_create1 arc4random getrusage timerfd_create accept4 pipe2])	
 
 AC_SEARCH_LIBS(nanosleep, rt posix4, AC_DEFINE(HAVE_NANOSLEEP, 1, [Define if you have nanosleep]))
 AC_SEARCH_LIBS(timer_create, rt, AC_DEFINE(HAVE_TIMER_CREATE, 1, [Define if you have timer_create]))
@@ -483,18 +453,6 @@ else
 fi
 
 
-if test "$is_mingw" = "yes"; then
-	AC_DEFINE(HAVE_WIN32, [1], [Define to 1 if you are on windows])
-fi
-
-
-
-
-
-
-
-
-
 
 dnl Debug-related options
 dnl =====================
@@ -590,14 +548,6 @@ fi
 
 echo "#define RB_SIZEOF_TIME_T $rb_sizeof_time_t" >> $outfile
 echo "#define RB_SIZEOF_LONG $rb_sizeof_long" >> $outfile
-
-if test "x$rb_windows_h" = "xyes"; then
-	echo '#define WIN32_LEAN_AND_MEAN 1' >> $outfile
-	echo '#include <windows.h>' >> $outfile
-	echo '#include <winsock2.h>' >> $outfile
-	echo '#include <iphlpapi.h>' >> $outfile
-	echo '#include <ws2tcpip.h>' >> $outfile
-fi
 
 if test "x$rb_alloca_h" = "xyes"; then
 	echo '#define RB_HAVE_ALLOCA_H 1' >> $outfile

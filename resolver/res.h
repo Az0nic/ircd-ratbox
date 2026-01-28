@@ -13,8 +13,8 @@
 
 struct DNSReply
 {
-	char *h_name;
 	struct rb_sockaddr_storage addr;
+	char *h_name;
 };
 
 

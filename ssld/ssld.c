@@ -163,7 +163,7 @@ uint32_to_buf(void *buf, uint32_t x)
 
 #ifdef HAVE_ZLIB
 static void *
-ssld_alloc(void *unused, size_t count, size_t size)
+ssld_alloc(void *unused, unsigned int count, unsigned int size)
 {
 	return rb_malloc(count * size);
 }
@@ -274,8 +274,9 @@ static conn_t *
 make_conn(mod_ctl_t * ctl, rb_fde_t *mod_fd, rb_fde_t *plain_fd)
 {
 	conn_t *conn; 
-	/* we need both, not just one..bail if NULL */
-	if(mod_fd == NULL || plain_fd == NULL)
+
+	/* we need all three, not just one..bail if any are NULL */
+	if(ctl == NULL || mod_fd == NULL || plain_fd == NULL)
 		return NULL;
 	
 	conn = rb_malloc(sizeof(conn_t));
@@ -764,8 +765,7 @@ ssl_process_accept(mod_ctl_t * ctl, mod_ctl_buf_t * ctlb)
 	}
 	id = buf_to_uint32(&ctlb->buf[1]);
 
-	if(id > 0)
-		conn_add_id_hash(conn, id);
+	conn_add_id_hash(conn, id);
 	SetSSL(conn);
 
 	rb_ssl_attach_ctx_to_fde(ssl_server_ctx, conn->mod_fd);
@@ -795,9 +795,8 @@ ssl_process_connect(mod_ctl_t * ctl, mod_ctl_buf_t * ctlb)
 	}
 
 	id = buf_to_uint32(&ctlb->buf[1]);
-
-	if(id > 0)
-		conn_add_id_hash(conn, id);
+	conn_add_id_hash(conn, id);
+	
 	SetSSL(conn);
 
 	rb_ssl_attach_ctx_to_fde(ssl_client_ctx, conn->mod_fd);
@@ -821,9 +820,6 @@ process_stats(mod_ctl_t * ctl, mod_ctl_buf_t * ctlb)
 
 	id = buf_to_uint32(&ctlb->buf[1]);
 
-	if(id == 0)
-		return;
-
 	odata = &ctlb->buf[5];
 	conn = conn_find_by_id(id);
 
@@ -841,7 +837,6 @@ process_stats(mod_ctl_t * ctl, mod_ctl_buf_t * ctlb)
 
 
 #ifdef HAVE_ZLIB
-
 static void
 zlib_process(mod_ctl_t * ctl, mod_ctl_buf_t * ctlb)
 {
@@ -908,15 +903,24 @@ zlib_process(mod_ctl_t * ctl, mod_ctl_buf_t * ctlb)
 }
 #endif
 
-
 static char *advance_zstring(uint8_t **p)
 {
 	rb_zstring_t *zs;
-	size_t l;
+	ssize_t l;
 	char *r;
 	
 	zs = rb_zstring_alloc();
+	
+	if(zs == NULL) 
+		return NULL;
+
 	l = rb_zstring_deserialize(zs, *p); 
+
+	if(l == -1 || l > (INT16_MAX - 1))
+	{
+		rb_zstring_free(zs);
+		return NULL;
+	}
 
 	*p += l;
 	if(rb_zstring_len(zs) == 0)
@@ -945,8 +949,8 @@ ssl_new_keys(mod_ctl_t * ctl, mod_ctl_buf_t * ctl_buf)
 	p++;
 	if(argcnt != 7) 
 		goto invalid;
+
 	cacert = advance_zstring(&p);
-	
 	cert = advance_zstring(&p);
 	if(cert == NULL)
 		goto invalid;
@@ -1020,8 +1024,7 @@ send_nossl_support(mod_ctl_t * ctl, mod_ctl_buf_t * ctlb)
 		}
 		id = buf_to_uint32(&ctlb->buf[1]);
 
-		if(id > 0)
-			conn_add_id_hash(conn, id);
+		conn_add_id_hash(conn, id);
 		close_conn(conn, WAIT_PLAIN, "libratbox reports no SSL/TLS support");
 	}
 	mod_cmd_write_queue(ctl, nossl_cmd, strlen(nossl_cmd));
@@ -1050,8 +1053,7 @@ send_nozlib_support(mod_ctl_t * ctl, mod_ctl_buf_t * ctlb)
 		}
 		id = buf_to_uint32(&ctlb->buf[1]);
 
-		if(id > 0)
-			conn_add_id_hash(conn, id);
+		conn_add_id_hash(conn, id);
 		close_conn(conn, WAIT_PLAIN, "libratbox reports no zlib support");
 	}
 	mod_cmd_write_queue(ctl, nozlib_cmd, strlen(nozlib_cmd));
@@ -1258,7 +1260,6 @@ main(int argc, char **argv)
 	pipefd = atoi(s_pipe);
 	ppid = atoi(s_pid);
 
-#ifndef _WIN32
 	int x;
 
 	for(x = 0; x < maxfd; x++)
@@ -1279,7 +1280,6 @@ main(int argc, char **argv)
 		if(x > 2)
 			close(x);
 	}
-#endif
 #endif
 	setup_signals();
 	rb_lib_init(NULL, NULL, NULL, 0, maxfd);
@@ -1310,18 +1310,15 @@ main(int argc, char **argv)
 }
 
 
-#ifndef _WIN32
 static void
 dummy_handler(int sig)
 {
 	return;
 }
-#endif
 
 static void
 setup_signals(void)
 {
-#ifndef _WIN32
 	struct sigaction act;
 
 	act.sa_flags = 0;
@@ -1349,5 +1346,4 @@ setup_signals(void)
 
 	act.sa_handler = dummy_handler;
 	sigaction(SIGALRM, &act, NULL);
-#endif
 }

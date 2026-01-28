@@ -14,7 +14,6 @@
 
 @SET_MAKE@
 
-
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -130,11 +129,11 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(libdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libratbox_la_DEPENDENCIES =
-am_libratbox_la_OBJECTS = unix.lo win32.lo crypt.lo commio.lo \
-	openssl.lo gnutls.lo nossl.lo event.lo ratbox_lib.lo \
-	rb_memory.lo linebuf.lo snprintf.lo rb_tools.lo helper.lo \
-	devpoll.lo epoll.lo poll.lo ports.lo select.lo kqueue.lo \
-	rawbuf.lo patricia.lo arc4random.lo mbedtls.lo version.lo
+am_libratbox_la_OBJECTS = unix.lo crypt.lo commio.lo openssl.lo \
+	gnutls.lo nossl.lo event.lo ratbox_lib.lo rb_memory.lo \
+	linebuf.lo snprintf.lo rb_tools.lo helper.lo devpoll.lo \
+	epoll.lo poll.lo ports.lo select.lo kqueue.lo rawbuf.lo \
+	patricia.lo arc4random.lo mbedtls.lo version.lo
 libratbox_la_OBJECTS = $(am_libratbox_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -234,6 +233,7 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 EXTRA_WARNINGS = @EXTRA_WARNINGS@
 FGREP = @FGREP@
+FILECMD = @FILECMD@
 GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
 GNUTLS_LIBS = @GNUTLS_LIBS@
 GREP = @GREP@
@@ -252,6 +252,7 @@ LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
+LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
@@ -335,7 +336,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -348,7 +348,6 @@ AUTOMAKE_OPTIONS = foreign
 BUILT_SOURCES = version.c
 libratbox_la_SOURCES = \
 	unix.c				\
-	win32.c				\
 	crypt.c				\
 	commio.c			\
 	openssl.c			\
@@ -479,7 +478,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/snprintf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/version.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

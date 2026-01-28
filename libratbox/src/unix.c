@@ -25,8 +25,6 @@
 #include "ratbox_lib.h"
 
 
-#ifndef _WIN32
-
 #include <sys/wait.h>
 
 
@@ -144,6 +142,3 @@ rb_getpid(void)
 {
 	return getpid();
 }
-
-
-#endif /* !WIN32 */

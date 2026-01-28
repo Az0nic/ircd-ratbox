@@ -73,66 +73,6 @@ char *alloca();
 #define rb_unlikely(x)	(x)
 #endif
 
-
-
-#ifdef _WIN32
-#include <process.h>
-
-#ifndef MAXPATHLEN
-#define MAXPATHLEN 128
-#endif
-
-#ifdef strerror
-#undef strerror
-#endif
-
-#define strerror(x) rb_strerror(x)
-char *rb_strerror(int error);
-
-
-#ifndef ENOBUFS
-#define ENOBUFS	    WSAENOBUFS
-#endif
-#ifndef EINPROGRESS
-#define EINPROGRESS WSAEINPROGRESS
-#endif
-
-#ifndef EWOULDBLOCK
-#define EWOULDBLOCK WSAEWOULDBLOCK
-#endif
-#ifndef EMSGSIZE
-#define EMSGSIZE    WSAEMSGSIZE
-#endif
-#ifndef EALREADY
-#define EALREADY    WSAEALREADY
-#endif
-
-#ifndef EISCONN
-#define EISCONN	    WSAEISCONN
-#endif
-
-#ifndef EADDRINUSE
-#define EADDRINUSE  WSAEADDRINUSE
-#endif
-#ifndef EAFNOSUPPORT
-#define EAFNOSUPPORT WSAEAFNOSUPPORT
-#endif
-
-#define pipe(x)	 _pipe(x, 1024, O_BINARY)
-#define ioctl(x,y,z)  ioctlsocket(x,y, (u_long *)z)
-
-#ifndef WNOHANG
-#define WNOHANG 1
-#endif
-
-#ifndef SIGKILL
-#define SIGKILL SIGTERM
-#endif
-
-#endif /* _WIN32 */
-
-
-
 #ifndef HOSTIPLEN
 #define HOSTIPLEN	53
 #endif
@@ -260,12 +200,6 @@ extern const char *libratbox_infotext[];
 #define LIBRB_TT_FMT "lld"
 #endif
 #endif          
-
-#ifdef _WIN32
-#undef LIBRB_TT_FMT
-#define LIBRB_TT_FMT "ld"
-#endif
-
 
 
 #include <rb_tools.h>

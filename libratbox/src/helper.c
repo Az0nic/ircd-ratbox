@@ -59,7 +59,6 @@ rb_helper_child(rb_helper_cb * read_cb, rb_helper_cb * error_cb, log_cb * ilog,
 	ofd = (int)strtol(tofd, NULL, 10);
 	maxfd = (int)strtol(tmaxfd, NULL, 10);
 
-#ifndef _WIN32
 	int x;
 	for(x = 0; x < maxfd; x++)
 	{
@@ -75,7 +74,6 @@ rb_helper_child(rb_helper_cb * read_cb, rb_helper_cb * error_cb, log_cb * ilog,
 		dup2(x, 2);
 	if(x > 2)		/* don't undo what we just did */
 		close(x);
-#endif
 
 	rb_lib_init(ilog, irestart, idie, 0, maxfd);
 	rb_linebuf_init();
@@ -130,6 +128,9 @@ rb_helper_start(const char *name, const char *fullpath, rb_helper_cb * read_cb,
 		return NULL;
 	}
 
+	rb_set_cloexec(in_f[1], false);
+	rb_set_cloexec(out_f[0], false);
+	
 	snprintf(fx, sizeof(fx), "%d", rb_get_fd(in_f[1]));
 	snprintf(fy, sizeof(fy), "%d", rb_get_fd(out_f[0]));
 
@@ -145,11 +146,6 @@ rb_helper_start(const char *name, const char *fullpath, rb_helper_cb * read_cb,
 	snprintf(buf, sizeof(buf), "-%s", name);
 	parv[0] = buf;
 	parv[1] = NULL;
-
-#ifdef _WIN32
-	SetHandleInformation((HANDLE) rb_get_fd(in_f[1]), HANDLE_FLAG_INHERIT, 1);
-	SetHandleInformation((HANDLE) rb_get_fd(out_f[0]), HANDLE_FLAG_INHERIT, 1);
-#endif
 
 	pid = rb_spawn_process(fullpath, (const char **)parv);
 
