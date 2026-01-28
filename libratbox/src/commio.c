@@ -975,6 +975,9 @@ rb_fake_writev(rb_fde_t *F, const struct rb_iovec *vp, int vpcount)
 				return written;
 		}
 		count += written;
+
+		if(written < vp->iov_len)
+			break;
 		vp++;
 	}
 	return (count);
