@@ -76,11 +76,6 @@ static PF rb_connect_tryconnect;
 static void mangle_mapped_sockaddr(struct sockaddr *in);
 #endif
 
-#ifndef HAVE_SOCKETPAIR
-static int rb_inet_socketpair(int d, int type, int protocol, int sv[2]);
-static int rb_inet_socketpair_udp(rb_fde_t **newF1, rb_fde_t **newF2);
-#endif
-
 static inline rb_fde_t *
 add_fd(int fd)
 {
@@ -1773,6 +1768,7 @@ rb_recv_fd_buf(rb_fde_t *F, void *data, size_t datasize, rb_fde_t **xF, unsigned
 	uint8_t stype = RB_FD_UNKNOWN;
 	const char *desc;
 	int fd;
+	int flags = 0;
 	ssize_t len;
 	size_t control_len = CMSG_SPACE(sizeof(int) * (size_t)nfds);
 	uint8_t cbuf[control_len];
@@ -1789,7 +1785,11 @@ rb_recv_fd_buf(rb_fde_t *F, void *data, size_t datasize, rb_fde_t **xF, unsigned
 	msg.msg_control = cmsg;
 	msg.msg_controllen = control_len;
 
-	if((len = recvmsg(rb_get_fd(F), &msg, 0)) <= 0)
+#ifdef MSG_CMSG_CLOEXEC
+	flags |= MSG_CMSG_CLOEXEC;
+#endif
+
+	if((len = recvmsg(rb_get_fd(F), &msg, flags)) <= 0)
 		return -1;
 
 	if(msg.msg_controllen > 0 && msg.msg_control != NULL
