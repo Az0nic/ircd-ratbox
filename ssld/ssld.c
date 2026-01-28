@@ -837,7 +837,6 @@ process_stats(mod_ctl_t * ctl, mod_ctl_buf_t * ctlb)
 
 
 #ifdef HAVE_ZLIB
-
 static void
 zlib_process(mod_ctl_t * ctl, mod_ctl_buf_t * ctlb)
 {
@@ -922,7 +921,6 @@ static char *advance_zstring(uint8_t **p)
 		rb_zstring_free(zs);
 		return NULL;
 	}
-	
 
 	*p += l;
 	if(rb_zstring_len(zs) == 0)
