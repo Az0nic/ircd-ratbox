@@ -1684,40 +1684,6 @@ rb_setup_fd(rb_fde_t *F)
 {
 	return setup_fd_handler(F);
 }
-
-
-
-int
-rb_ignore_errno(int error)
-{
-	switch (error)
-	{
-#ifdef EINPROGRESS
-	case EINPROGRESS:
-#endif
-#if defined EWOULDBLOCK
-	case EWOULDBLOCK:
-#endif
-#if defined(EAGAIN) && (EWOULDBLOCK != EAGAIN)
-	case EAGAIN:
-#endif
-#ifdef EINTR
-	case EINTR:
-#endif
-#ifdef ERESTART
-	case ERESTART:
-#endif
-#ifdef ENOBUFS
-	case ENOBUFS:
-#endif
-		return 1;
-	default:
-		break;
-	}
-	return 0;
-}
-
-
 #if defined(HAVE_SENDMSG) 
 ssize_t
 rb_recv_fd_buf(rb_fde_t *F, void *data, size_t datasize, rb_fde_t **xF, unsigned int nfds)

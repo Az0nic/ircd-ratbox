@@ -147,7 +147,37 @@ const char *rb_inet_ntop(int af, void *src, char *dst, rb_socklen_t len);
 
 
 int rb_getmaxconnect(void);
-int rb_ignore_errno(int);
+
+
+static inline int
+rb_ignore_errno(int error)
+{
+	switch (error)
+	{
+#ifdef EINPROGRESS
+	case EINPROGRESS:
+#endif
+#if defined EWOULDBLOCK
+	case EWOULDBLOCK:
+#endif
+#if defined(EAGAIN) && (EWOULDBLOCK != EAGAIN)
+	case EAGAIN:
+#endif
+#ifdef EINTR
+	case EINTR:
+#endif
+#ifdef ERESTART
+	case ERESTART:
+#endif
+#ifdef ENOBUFS
+	case ENOBUFS:
+#endif
+		return 1;
+	default:
+		break;
+	}
+	return 0;
+}
 
 /* Generic wrappers */
 void rb_setselect(rb_fde_t *, unsigned int type, PF * handler, void *client_data);
