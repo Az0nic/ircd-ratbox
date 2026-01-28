@@ -274,8 +274,9 @@ static conn_t *
 make_conn(mod_ctl_t * ctl, rb_fde_t *mod_fd, rb_fde_t *plain_fd)
 {
 	conn_t *conn; 
-	/* we need both, not just one..bail if NULL */
-	if(mod_fd == NULL || plain_fd == NULL)
+
+	/* we need all three, not just one..bail if any are NULL */
+	if(ctl == NULL || mod_fd == NULL || plain_fd == NULL)
 		return NULL;
 	
 	conn = rb_malloc(sizeof(conn_t));
