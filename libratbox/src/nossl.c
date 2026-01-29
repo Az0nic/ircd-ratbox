@@ -25,7 +25,7 @@
 #include "ratbox_lib.h"
 #if !defined(HAVE_OPENSSL) && !defined(HAVE_GNUTLS) && !defined(HAVE_MBEDTLS)
 
-#include "arc4random.h"
+#include "rb_arc4random.h"
 
 #include "commio-int.h"
 #include "commio-ssl.h"
