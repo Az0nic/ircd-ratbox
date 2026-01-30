@@ -209,7 +209,8 @@ rb_rawbuf_append(rb_rawbuf_head_t * rb, void *in, size_t len)
 	}
 }
 
-
+#if 0
+/* this is still broken..if somebody wants to use it, they need to fix it */
 size_t
 rb_rawbuf_get(rb_rawbuf_head_t * rb, void *data, size_t len)
 {
@@ -228,6 +229,8 @@ rb_rawbuf_get(rb_rawbuf_head_t * rb, void *data, size_t len)
 
 	cpylen = IRCD_MIN(len, buf->len);
 
+	memcpy(data, ptr, cpylen);
+
 	if(cpylen == buf->len)
 	{
 		rb->written = 0;
@@ -242,6 +245,7 @@ rb_rawbuf_get(rb_rawbuf_head_t * rb, void *data, size_t len)
 	rb->written += cpylen;
 	return cpylen;
 }
+#endif
 
 size_t
 rb_rawbuf_length(rb_rawbuf_head_t * rb)
