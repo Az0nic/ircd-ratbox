@@ -41,6 +41,7 @@ extern char **environ;
 pid_t
 rb_spawn_process(const char *path, const char **argv)
 {
+	int ret;
 	pid_t pid;
 	const void *arghack = argv;
 	char **myenviron;
@@ -54,11 +55,13 @@ rb_spawn_process(const char *path, const char **argv)
 #else
 	myenviron = environ;
 #endif
-	if(posix_spawn(&pid, path, NULL, &spattr, arghack, myenviron))
-	{
+	ret = posix_spawn(&pid, path, NULL, &spattr, arghack, myenviron); 
+	posix_spawnattr_destroy(&spattr);
+
+	if(ret)
 		return -1;
-	}
-	return pid;
+	else
+		return pid;
 }
 #else
 pid_t
