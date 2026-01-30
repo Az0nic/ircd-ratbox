@@ -226,18 +226,13 @@ rb_rawbuf_get(rb_rawbuf_head_t * rb, void *data, size_t len)
 	else
 		ptr = buf->data;
 
-	if(len > buf->len)
-		cpylen = buf->len;
-	else
-		cpylen = len;
-
-	memcpy(data, ptr, cpylen);
+	cpylen = IRCD_MIN(len, buf->len);
 
 	if(cpylen == buf->len)
 	{
 		rb->written = 0;
 		rb_rawbuf_done(rb, buf);
-		rb->len -= len;
+		rb->len -= cpylen;
 		return cpylen;
 	}
 
