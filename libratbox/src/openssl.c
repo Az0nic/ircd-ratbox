@@ -195,36 +195,6 @@ rb_ssl_tryaccept(rb_fde_t *F, void *data)
 }
 
 
-static void
-rb_ssl_accept_common(rb_fde_t *new_F)
-{
-	int ssl_err;
-	if((ssl_err = SSL_accept((SSL *) new_F->ssl)) <= 0)
-	{
-		switch (ssl_err = SSL_get_error((SSL *) new_F->ssl, ssl_err))
-		{
-		case SSL_ERROR_SYSCALL:
-			if(rb_ignore_errno(errno))
-		case SSL_ERROR_WANT_READ:
-		case SSL_ERROR_WANT_WRITE:
-				{
-					new_F->sslerr.ssl_errno = get_last_err();
-					rb_setselect(new_F, RB_SELECT_READ | RB_SELECT_WRITE,
-						     rb_ssl_tryaccept, NULL);
-					return;
-				}
-		default:
-			new_F->sslerr.ssl_errno = get_last_err();
-			new_F->accept->callback(new_F, RB_ERROR_SSL, NULL, 0, new_F->accept->data);
-			return;
-		}
-	}
-	else
-	{
-		rb_ssl_tryaccept(new_F, NULL);
-	}
-}
-
 void
 rb_ssl_start_accepted(rb_fde_t *new_F, ACCB * cb, void *data, int timeout)
 {
@@ -250,7 +220,7 @@ rb_ssl_start_accepted(rb_fde_t *new_F, ACCB * cb, void *data, int timeout)
 	new_F->accept->addrlen = 0;
 	SSL_set_fd((SSL *) new_F->ssl, rb_get_fd(new_F));
 	rb_setup_ssl_cb(new_F);
-	rb_ssl_accept_common(new_F);
+	rb_ssl_tryaccept(new_F, NULL);
 }
 
 
@@ -285,7 +255,7 @@ rb_ssl_accept_setup(rb_fde_t *F, rb_fde_t *new_F, struct sockaddr *st, rb_sockle
 
 	SSL_set_fd((SSL *) new_F->ssl, rb_get_fd(new_F));
 	rb_setup_ssl_cb(new_F);
-	rb_ssl_accept_common(new_F);
+	rb_ssl_tryaccept(new_F, NULL);
 }
 
 typedef enum {
