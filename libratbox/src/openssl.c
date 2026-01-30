@@ -494,6 +494,17 @@ rb_setup_ssl_server(const char *cacert, const char *cert, const char *keyfile, c
 			tls_opts |= SSL_OP_NO_TLSv1_1;
 #endif
 			break;
+		case RB_TLS_VER_TLS1_3:
+#ifdef SSL_OP_NO_TLSv1
+			tls_opts |= SSL_OP_NO_TLSv1;
+#endif
+#ifdef SSL_OP_NO_TLSv1_1
+			tls_opts |= SSL_OP_NO_TLSv1_1;
+#endif
+#ifdef SSL_OP_NO_TLSv1_2
+			tls_opts |= SSL_OP_NO_TLSv1_2;
+#endif
+			break;
 		case RB_TLS_VER_LAST:
 			break;
 	}

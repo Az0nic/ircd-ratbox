@@ -1117,6 +1117,7 @@ static const char *ver_table[] = {
 	[RB_TLS_VER_TLS1] = "tls1.0",
 	[RB_TLS_VER_TLS1_1] = "tls1.1",
 	[RB_TLS_VER_TLS1_2] = "tls1.2",
+	[RB_TLS_VER_TLS1_3] = "tls1.3",
 	[RB_TLS_VER_LAST] = NULL,
 };
 
