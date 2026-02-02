@@ -81,7 +81,7 @@ mapi_clist_av1 kline_clist[] = { &kline_msgtab, &unkline_msgtab, &adminkline_msg
 DECLARE_MODULE_AV1(kline, NULL, NULL, kline_clist, NULL, NULL, "$Revision$");
 
 /* Local function prototypes */
-static int find_user_host(struct Client *source_p, const char *userhost, char *user, char *host);
+static int find_user_host(struct Client *source_p, const char *userhost, char *user, size_t usersz, char *host, size_t hostsz);
 static int valid_user_host(struct Client *source_p, const char *user, const char *host);
 static int valid_wild_card(struct Client *source_p, const char *user, const char *host);
 
@@ -127,7 +127,7 @@ mo_kline(struct Client *client_p, struct Client *source_p, int parc, const char 
 	else
 		tkline_time = 0;
 
-	if(find_user_host(source_p, parv[loc], user, host) == 0)
+	if(find_user_host(source_p, parv[loc], user, sizeof(user), host, sizeof(host)) == 0)
 		return 0;
 
 	loc++;
@@ -216,7 +216,7 @@ mo_adminkline(struct Client *client_p, struct Client *source_p, int parc, const 
 		return 0;
 	}
 
-	if(find_user_host(source_p, parv[1], user, host) == 0)
+	if(find_user_host(source_p, parv[1], user, sizeof(user), host, sizeof(host)) == 0)
 		return 0;
 
 	set_kline(source_p, user, host, parv[2], 0, 1);
@@ -523,7 +523,7 @@ mangle_wildcard_to_cidr(const char *text)
  * side effects -
  */
 static int
-find_user_host(struct Client *source_p, const char *userhost, char *luser, char *lhost)
+find_user_host(struct Client *source_p, const char *userhost, char *luser, size_t lusersz, char *lhost, size_t lhostsz)
 {
 	char *hostp;
 	const char *ptr;
@@ -534,7 +534,7 @@ find_user_host(struct Client *source_p, const char *userhost, char *luser, char 
 	{
 		*(hostp++) = '\0';	/* short and squat */
 		if(*userhost)
-			rb_strlcpy(luser, userhost, USERLEN + 1);	/* here is my user */
+			rb_strlcpy(luser, userhost, lusersz);	/* here is my user */
 		else
 			strcpy(luser, "*");
 		if(*hostp)
@@ -542,7 +542,7 @@ find_user_host(struct Client *source_p, const char *userhost, char *luser, char 
 			ptr = mangle_wildcard_to_cidr(hostp);
 			if(ptr == NULL)
 				ptr = hostp;
-			rb_strlcpy(lhost, ptr, HOSTLEN + 1);	/* here is my host */
+			rb_strlcpy(lhost, ptr, lhostsz);	/* here is my host */
 		}
 		else
 			strcpy(lhost, "*");
@@ -565,7 +565,7 @@ find_user_host(struct Client *source_p, const char *userhost, char *luser, char 
 		if(ptr == NULL)
 			ptr = userhost;
 
-		rb_strlcpy(lhost, ptr, HOSTLEN + 1);
+		rb_strlcpy(lhost, ptr, lhostsz);
 	}
 
 	return 1;
