@@ -164,40 +164,37 @@ extern int errno;
 #endif
 
 
-
-#ifdef strdupa
-#define LOCAL_COPY(s) strdupa(s)
+/* unconditionally use our own strdupa/strndupa. 
+ * if you use a compiler other than these, fix it yourself 
+ * these macros were lifted from glibc
+ */
+#if defined(__INTEL_COMPILER) || defined(__GNUC__) || defined(__clang__)      
+#define LOCAL_COPY(s) 							      \
+  (__extension__                                                              \
+    ({                                                                        \
+      const char *__old = (s);                                                \
+      size_t __len = strlen (__old) + 1;                                      \
+      char *__new = (char *) __builtin_alloca (__len);                        \
+      (char *) memcpy (__new, __old, __len);                                  \
+    }))
 #else
-#if defined(__INTEL_COMPILER) || defined(__GNUC__)
-# define LOCAL_COPY(s) __extension__({ char *_s = alloca(strlen(s) + 1); strcpy(_s, s); _s; })
-#else
-# define LOCAL_COPY(s) strcpy(alloca(strlen(s) + 1), s)	/* XXX Is that allowed? */
-#endif /* defined(__INTEL_COMPILER) || defined(__GNUC__) */
-#endif /* strdupa */
+#error "does your compiler support strdup/alloca?"
+#endif /* defined(__INTEL_COMPILER) || defined(__GNUC__) || defined(__clang__) */
 
 /* LOCAL_COPY_N copies n part of string and adds one to terminate the string */
-#ifdef strndupa
-#define LOCAL_COPY_N(s, n) strndupa(s, n)
+#if defined(__INTEL_COMPILER) || defined(__GNUC__) || defined(__clang__)
+# define LOCAL_COPY_N(s, n)                                                   \
+  (__extension__                                                              \
+    ({                                                                        \
+      const char *__old = (s);                                                \
+      size_t __len = strnlen (__old, (n));                                    \
+      char *__new = (char *) __builtin_alloca (__len + 1);                    \
+      __new[__len] = '\0';                                                    \
+      (char *) memcpy (__new, __old, __len);                                  \
+    }))
 #else
-#if defined(__INTEL_COMPILER) || defined(__GNUC__)
-#define LOCAL_COPY_N(s, n) __extension__({ size_t _l = strlen(s); _l = n > _l ? _l : n; char *_s = alloca(_l+1); memcpy(_s, s, _l); _s[_l] = '\0' ; _s; })
-#else
-#define LOCAL_COPY_N(s, n) xc_strlcpy(alloca(strlen(s)+1), s, n)
-INLINE_FUNC size_t
-xc_strlcpy(char *dest, const char *src, size_t size)
-{
-	size_t ret = strlen(src);
-
-	if(size)
-	{
-		size_t len = (ret >= size) ? size - 1 : ret;
-		memcpy(dest, src, len);
-		dest[len] = '\0';
-	}
-	return dest;
-}
-#endif /* defined(__INTEL_COMPILER) || defined(__GNUC__) */
-#endif /* strndupa */
+#error "does your compiler support strndup/alloca?"
+#endif /* defined(__INTEL_COMPILER) || defined(__GNUC__) ||  defined(__clang__) */
 
 #ifndef INADDR_NONE
 # define INADDR_NONE ((in_addr_t) 0xffffffff)
