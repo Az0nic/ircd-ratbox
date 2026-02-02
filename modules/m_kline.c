@@ -523,10 +523,11 @@ mangle_wildcard_to_cidr(const char *text)
  * side effects -
  */
 static int
-find_user_host(struct Client *source_p, const char *userhost, char *luser, size_t lusersz, char *lhost, size_t lhostsz)
+find_user_host(struct Client *source_p, const char *uh, char *luser, size_t lusersz, char *lhost, size_t lhostsz)
 {
 	char *hostp;
 	const char *ptr;
+	char *userhost = LOCAL_COPY(uh);
 
 	hostp = strchr(userhost, '@');
 
@@ -536,7 +537,7 @@ find_user_host(struct Client *source_p, const char *userhost, char *luser, size_
 		if(*userhost)
 			rb_strlcpy(luser, userhost, lusersz);	/* here is my user */
 		else
-			strcpy(luser, "*");
+			rb_strlcpy(luser, "*", lusersz);
 		if(*hostp)
 		{
 			ptr = mangle_wildcard_to_cidr(hostp);
@@ -545,7 +546,7 @@ find_user_host(struct Client *source_p, const char *userhost, char *luser, size_
 			rb_strlcpy(lhost, ptr, lhostsz);	/* here is my host */
 		}
 		else
-			strcpy(lhost, "*");
+			rb_strlcpy(lhost, "*", lhostsz);
 	}
 	else
 	{
@@ -558,8 +559,7 @@ find_user_host(struct Client *source_p, const char *userhost, char *luser, size_
 			return 0;
 		}
 
-		luser[0] = '*';	/* no @ found, assume its *@somehost */
-		luser[1] = '\0';
+		rb_strlcpy(luser, "*", lusersz); /* no @ found, assume its *@somehost */
 		ptr = mangle_wildcard_to_cidr(userhost);
 
 		if(ptr == NULL)
