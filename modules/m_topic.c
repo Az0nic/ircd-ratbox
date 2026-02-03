@@ -64,9 +64,6 @@ m_topic(struct Client *client_p, struct Client *source_p, int parc, const char *
 	struct membership *msptr;
 	char *p = NULL;
 
-	if((p = strchr(parv[1], ',')))
-		*p = '\0';
-
 	if(MyClient(source_p) && !IsFloodDone(source_p))
 		flood_endgrace(source_p);
 
