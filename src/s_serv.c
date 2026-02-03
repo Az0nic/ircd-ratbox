@@ -316,21 +316,18 @@ send_capabilities(struct Client *client_p, int cap_can_send)
 	struct Capability *cap;
 	char msgbuf[IRCD_BUFSIZE];
 	char *t;
-	int tl;
 
 	t = msgbuf;
+	*t = '\0';
 
 	for(cap = captab; cap->name; ++cap)
 	{
 		if(cap->cap & cap_can_send)
-		{
-			tl = sprintf(t, "%s ", cap->name);
-			t += tl;
-		}
+			rb_snprintf_append(msgbuf, sizeof(msgbuf), "%s ", cap->name);
 	}
 
-	t--;
-	*t = '\0';
+	if(msgbuf[0] != '\0')
+		msgbuf[strlen(msgbuf) - 1] = '\0';
 
 	sendto_one(client_p, "CAPAB :%s", msgbuf);
 }
