@@ -30,9 +30,9 @@ typedef void DNSCB(const char *res, int status, int aftype, void *data);
 void init_resolver(void);
 void restart_resolver(void);
 void rehash_resolver(void);
-uint16_t __rb_must_check lookup_hostname(const char *hostname, int aftype, DNSCB * callback, void *data);
-uint16_t __rb_must_check lookup_ip(const char *hostname, int aftype, DNSCB * callback, void *data);
-void cancel_lookup(uint16_t xid);
+uint32_t __rb_must_check lookup_hostname(const char *hostname, int aftype, DNSCB * callback, void *data);
+uint32_t __rb_must_check lookup_ip(const char *hostname, int aftype, DNSCB * callback, void *data);
+void cancel_lookup(uint32_t xid);
 void report_dns_servers(struct Client *);
 void rehash_dns_vhost(void);
 

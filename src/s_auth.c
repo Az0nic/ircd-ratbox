@@ -76,7 +76,7 @@ struct AuthRequest
 {
 	rb_dlink_node node;
 	struct Client *client;	/* pointer to client struct for request */
-	uint16_t dns_query;	/* DNS Query */
+	uint32_t dns_query;	/* DNS Query */
 	rb_dlink_list rbl_queries;
 	rb_fde_t *authF;
 	unsigned int flags;	/* current state of request */
