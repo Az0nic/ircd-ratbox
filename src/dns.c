@@ -156,6 +156,8 @@ lookup_ip(const char *addr, int aftype, DNSCB * callback, void *data)
 static void
 results_callback(const char *callid, const char *status, const char *aftype, const char *results)
 {
+	DNSCB *cb;
+	void *data;
 	struct dnsreq *req;
 	uint16_t nid;
 	int st;
@@ -181,9 +183,11 @@ results_callback(const char *callid, const char *status, const char *aftype, con
 #endif
 		aft = AF_INET;
 
-	req->callback(results, st, aft, req->data);
+	cb = req->callback;
+	data = req->data;
 	req->callback = NULL;
 	req->data = NULL;
+	cb(results, st, aft, data);
 }
 
 
