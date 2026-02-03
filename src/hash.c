@@ -422,13 +422,19 @@ hash_node *
 hash_add_len(hash_f *hf, const void *hashindex, size_t indexlen, void *pointer)
 {
 	rb_dlink_list *bucket; // = hash_function[type].table;
+	size_t hashlen;
 	hash_node *hnode;
 	uint32_t hashv;
 
 	if(hf == NULL || hashindex == NULL || pointer == NULL)
 		return NULL;
 
-	hashv = do_hfunc(hf, hashindex, IRCD_MIN(indexlen, hf->hashlen));
+	if(hf->hashlen == 0)
+		hashlen = indexlen;
+	else
+		hashlen = IRCD_MIN(indexlen, hf->hashlen);
+
+	hashv = do_hfunc(hf, hashindex, hashlen);
 	bucket = hash_allocate_bucket(hf, hashv);
 	hnode = rb_malloc(sizeof(hash_node));
 	hnode->key = rb_malloc(indexlen);
