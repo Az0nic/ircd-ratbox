@@ -539,7 +539,7 @@ rb_setup_ssl_server(const char *cacert, const char *cert, const char *keyfile, c
 	if(dhfile != NULL)
 	{
 		/* DH parameters aren't necessary, but they are nice..if they didn't pass one..that is their problem */
-		BIO *bio = BIO_new_file(dhfile, "r");
+		BIO *bio = BIO_new_file(dhfile, "re");
 		if(bio != NULL)
 		{
 			DH *dh = PEM_read_bio_DHparams(bio, NULL, NULL, NULL);

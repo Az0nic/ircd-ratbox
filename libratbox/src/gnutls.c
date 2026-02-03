@@ -292,7 +292,7 @@ rb_load_file_into_datum_t(const char *file)
 	FILE *f;
 	gnutls_datum_t *datum;
 	struct stat fileinfo;
-	if((f = fopen(file, "r")) == NULL)
+	if((f = fopen(file, "re")) == NULL)
 		return NULL;
 	if(fstat(fileno(f), &fileinfo))
 		return NULL;
