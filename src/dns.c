@@ -316,7 +316,14 @@ parse_dns_reply(rb_helper * helper)
 	while((len = rb_helper_read(helper, dnsBuf, sizeof(dnsBuf))) > 0)
 	{
 		parc = rb_string_to_array(dnsBuf, parv, MAXPARA+1); 
-
+		
+		if(parc == 0)
+		{
+			ilog(L_MAIN, "Resolver overdosed on crack...restarting resolver");
+			restart_resolver();
+			return;
+		}
+		
 		if(*parv[0] == 'R')
 		{
 			if(parc != 5)
