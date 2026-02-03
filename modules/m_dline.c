@@ -314,7 +314,7 @@ set_dline(struct Client *source_p, const char *dlhost, const char *lreason, int 
 {
 	struct ConfItem *aconf;
 	char dlbuffer[IRCD_BUFSIZE];
-	const char *current_date;
+	char current_date[MAX_DATE_STRING];
 	const char *oper;
 	char *reason;
 	char *oper_reason;
@@ -322,7 +322,7 @@ set_dline(struct Client *source_p, const char *dlhost, const char *lreason, int 
 	reason = LOCAL_COPY_N(lreason, REASONLEN);
 
 	rb_set_time();
-	current_date = smalldate(rb_current_time());
+	smalldate(rb_current_time(), current_date, sizeof(current_date));
 
 	aconf = make_conf();
 	aconf->status = CONF_DLINE;

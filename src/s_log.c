@@ -172,13 +172,16 @@ ilog(ilogfile dest, const char *format, ...)
 	FILE *logfile = *log_table[dest].logfile;
 	char buf[IRCD_BUFSIZE];
 	char buf2[IRCD_BUFSIZE*2];
+	char current_date[MAX_DATE_STRING];
 	va_list args;
 
 	va_start(args, format);
 	vsnprintf(buf, sizeof(buf), format, args);
 	va_end(args);
 
-	snprintf(buf2, sizeof(buf2), "%s %s\n", smalldate(rb_current_time()), buf);
+	smalldate(rb_current_time(), current_date, sizeof(current_date));
+
+	snprintf(buf2, sizeof(buf2), "%s %s\n", current_date, buf);
 	if(logfile == NULL || server_state_foreground)
 	{
 		fputs(buf2, stderr);
@@ -215,14 +218,16 @@ report_operspy(struct Client *source_p, const char *token, const char *arg)
 }
 
 const char *
-smalldate(time_t ltime)
+smalldate(time_t ltime, char *buf, size_t bufsz)
 {
-	static char buf[MAX_DATE_STRING];
 	struct tm *lt;
+
+	if(buf == NULL)
+		return NULL;
 
 	lt = gmtime(&ltime);
 
-	snprintf(buf, sizeof(buf), "%d/%d/%d %02d.%02d",
+	snprintf(buf, bufsz, "%d/%d/%d %02d.%02d",
 		 lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday, lt->tm_hour, lt->tm_min);
 
 	return buf;

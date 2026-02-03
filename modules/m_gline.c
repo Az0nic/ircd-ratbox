@@ -611,11 +611,11 @@ set_local_gline(struct Client *source_p, const char *user, const char *host, con
 {
 	char buffer[IRCD_BUFSIZE];
 	struct ConfItem *aconf;
-	const char *current_date;
+	char current_date[MAX_DATE_STRING];
 	char *my_reason;
 	char *oper_reason;
 
-	current_date = smalldate(rb_current_time());
+	smalldate(rb_current_time(), current_date, sizeof(current_date));
 
 	my_reason = LOCAL_COPY(reason);
 

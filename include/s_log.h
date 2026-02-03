@@ -55,6 +55,6 @@ void close_logfiles(void);
 void
 ilog(ilogfile dest, const char *fmt, ...) AFP(2, 3);
 void report_operspy(struct Client *, const char *, const char *);
-const char *smalldate(time_t);
+const char *smalldate(time_t, char *, size_t);
 
 #endif
