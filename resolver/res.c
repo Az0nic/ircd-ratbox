@@ -588,13 +588,13 @@ do_query_number(struct DNSQuery *query, const struct rb_sockaddr_storage *addr,
 static void
 query_name(struct reslist *request)
 {
-	void *buf = alloca(MAXPACKET);
+	char buf[MAXPACKET];
 	int request_len = 0;
 
-	memset(buf, 0, MAXPACKET);
+	memset(buf, 0, sizeof(buf));
 
 	if((request_len =
-	    irc_res_mkquery(request->queryname, C_IN, request->type, buf, MAXPACKET)) > 0)
+	    irc_res_mkquery(request->queryname, C_IN, request->type, buf, sizeof(buf))) > 0)
 	{
 		HEADER *header = (HEADER *) buf;
 		/*
@@ -799,8 +799,7 @@ proc_answer(struct reslist *request, HEADER * header, char *buf, char *eob)
 static int
 res_read_single_reply(rb_fde_t *F, void *data)
 {
-	int buflen = sizeof(HEADER) + MAXPACKET;
-	void *buf = alloca(buflen);
+	char buf[sizeof(HEADER) + MAXPACKET];
 
 	HEADER *header;
 	struct reslist *request = NULL;
@@ -810,7 +809,7 @@ res_read_single_reply(rb_fde_t *F, void *data)
 	rb_socklen_t len = sizeof(struct rb_sockaddr_storage);
 	struct rb_sockaddr_storage lsin;
 
-	rc = recvfrom(rb_get_fd(F), buf, buflen, 0, (struct sockaddr *)&lsin, &len);
+	rc = recvfrom(rb_get_fd(F), buf, sizeof(buf), 0, (struct sockaddr *)&lsin, &len);
 
 	/* No packet */
 	if(rc == 0 || rc == -1)

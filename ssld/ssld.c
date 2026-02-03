@@ -1236,11 +1236,53 @@ read_pipe_ctl(rb_fde_t *F, void *data)
 	rb_setselect(F, RB_SELECT_READ, read_pipe_ctl, NULL);
 }
 
+static void 
+check_control(int control_fd)
+{
+	struct sockaddr_in addr;
+	socklen_t len;
+
+	if(control_fd < 0)
+	{
+		fprintf(stderr, "No control socket\n");
+		exit(1);
+	}
+
+	len = sizeof(addr);
+	if(getsockname(control_fd, (struct sockaddr *)&addr, &len) == -1)
+	{
+		fprintf(stderr, "Control descriptor is not a socket!\n");
+		exit(1);
+	}
+	if(addr.sin_family != AF_UNIX)
+	{
+		fprintf(stderr, "Control descriptor is not a unix socket!\n");
+		exit(1);
+	}
+}
+
+static void
+check_pipe(int pipefd)
+{
+	struct stat st;
+
+	if(fstat(pipefd, &st) < 0)
+	{
+		fprintf(stderr, "No control pipe\n");
+		exit(1);
+	}
+	if(!S_ISFIFO(st.st_mode))
+	{
+		fprintf(stderr, "Control pipe is not a pipe\n");
+		exit(1);
+	}
+}
+
 int
 main(int argc, char **argv)
 {
 	const char *s_ctlfd, *s_pipe, *s_pid;
-	int ctlfd, pipefd, maxfd;
+	int ctlfd, pipefd, maxfd, x;
 	mod_ctl_t *mod_ctl;
 
 	maxfd = maxconn();
@@ -1260,7 +1302,8 @@ main(int argc, char **argv)
 	pipefd = atoi(s_pipe);
 	ppid = atoi(s_pid);
 
-	int x;
+	check_pipe(pipefd);
+	check_control(ctlfd);
 
 	for(x = 0; x < maxfd; x++)
 	{

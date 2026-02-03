@@ -90,18 +90,16 @@ m_whowas(struct Client *client_p, struct Client *source_p, int parc, const char 
 			return 0;
 #endif
 
-	if((p = strchr(parv[1], ',')))
+	nick = LOCAL_COPY(parv[1]);
+	if((p = strchr(nick, ',')))
 		*p = '\0';
-
-	nick = parv[1];
-
 
 	whowas_list = whowas_get_list(nick);
 
 	if(whowas_list == NULL)
 	{
 		sendto_one_numeric(source_p, s_RPL(ERR_WASNOSUCHNICK), nick);
-		sendto_one_numeric(source_p, s_RPL(RPL_ENDOFWHOWAS), parv[1]);
+		sendto_one_numeric(source_p, s_RPL(RPL_ENDOFWHOWAS), nick);
 		return 0;
 	
 	}
@@ -130,6 +128,6 @@ m_whowas(struct Client *client_p, struct Client *source_p, int parc, const char 
 		if(max > 0 && cur >= max)
 			break;
 	}
-	sendto_one_numeric(source_p, s_RPL(RPL_ENDOFWHOWAS), parv[1]);
+	sendto_one_numeric(source_p, s_RPL(RPL_ENDOFWHOWAS), nick);
 	return 0;
 }

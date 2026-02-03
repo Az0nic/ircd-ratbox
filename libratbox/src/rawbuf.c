@@ -28,8 +28,9 @@
 struct _rb_rawbuf
 {
 	rb_dlink_node node;
-	uint8_t data[RAWBUF_SIZE];
+	void *data;
 	size_t len;
+	size_t written;
 	bool flushing;
 };
 
@@ -37,7 +38,6 @@ struct _rb_rawbuf_head
 {
 	rb_dlink_list list;
 	size_t len;
-	size_t written;
 };
 
 
@@ -55,6 +55,9 @@ static void
 rb_rawbuf_done(rb_rawbuf_head_t * rb, rb_rawbuf_t * buf)
 {
 	rb_rawbuf_t *ptr = buf;
+	if(buf->data != NULL)
+		rb_free(buf->data);
+
 	rb_dlinkDelete(&buf->node, &rb->list);
 	rb_free(ptr);
 }
@@ -83,8 +86,8 @@ rb_rawbuf_flush_writev(rb_rawbuf_head_t * rb, rb_fde_t *F)
 		buf = ptr->data;
 		if(buf->flushing == true)
 		{
-			vec[x].iov_base = buf->data + rb->written;
-			vec[x++].iov_len = buf->len - rb->written;
+			vec[x].iov_base = buf->data + buf->written;
+			vec[x++].iov_len = buf->len - buf->written;
 			continue;
 		}
 		vec[x].iov_base = buf->data;
@@ -108,10 +111,10 @@ rb_rawbuf_flush_writev(rb_rawbuf_head_t * rb, rb_fde_t *F)
 			break;
 		if(buf->flushing == true)
 		{
-			if(xret >= (ssize_t)(buf->len - rb->written))
+			if(xret >= (ssize_t)(buf->len - buf->written))
 			{
-				xret -= buf->len - rb->written;
-				rb->len -= buf->len - rb->written;
+				xret -= buf->len - buf->written;
+				rb->len -= buf->len - buf->written;
 				rb_rawbuf_done(rb, buf);
 				continue;
 			}
@@ -126,7 +129,7 @@ rb_rawbuf_flush_writev(rb_rawbuf_head_t * rb, rb_fde_t *F)
 		else
 		{
 			buf->flushing = true;
-			rb->written = (size_t)xret;
+			buf->written = (size_t)xret;
 			rb->len -= (size_t)xret;
 			break;
 		}
@@ -140,6 +143,7 @@ rb_rawbuf_flush(rb_rawbuf_head_t * rb, rb_fde_t *F)
 {
 	rb_rawbuf_t *buf;
 	ssize_t retval;
+
 	if(rb->list.head == NULL)
 	{
 		errno = EAGAIN;
@@ -153,19 +157,17 @@ rb_rawbuf_flush(rb_rawbuf_head_t * rb, rb_fde_t *F)
 	if(buf->flushing == false)
 	{
 		buf->flushing = true;
-		rb->written = 0;
+		buf->written = 0;
 	}
 
-	retval = rb_write(F, buf->data + rb->written, buf->len - rb->written);
+	retval = rb_write(F, buf->data + buf->written, buf->len - buf->written);
 	if(retval <= 0)
 		return retval;
 
-	rb->written += (size_t)retval;
-	if(rb->written == buf->len)
+	buf->written += (size_t)retval;
+	if(buf->written == buf->len)
 	{
-		rb->written = 0;
-		rb_dlinkDelete(&buf->node, &rb->list);
-		rb_free(buf);
+		rb_rawbuf_done(rb, buf);
 	}
 	rb->len -= (size_t)retval;
 	return retval;
@@ -178,38 +180,16 @@ rb_rawbuf_flush(rb_rawbuf_head_t * rb, rb_fde_t *F)
 void
 rb_rawbuf_append(rb_rawbuf_head_t * rb, void *in, size_t len)
 {
-	rb_rawbuf_t *buf = NULL;
-	size_t clen;
-	void *ptr;
-	uint8_t *data = in;
-
-	if(rb->list.tail != NULL)
-		buf = rb->list.tail->data;
-
-	if(buf != NULL && buf->len < sizeof(buf->data) && buf->flushing == false)
-	{
-		ptr = (void *)((uintptr_t)buf->data + buf->len);
-		clen = IRCD_MIN((sizeof(buf->data) - buf->len), len);
-		memcpy(ptr, data, clen);
-		buf->len += clen;
-		rb->len += clen;
-		len -= clen;
-		data = (data + clen);
-	}
-
-	while(len > 0)
-	{
-		buf = rb_rawbuf_newbuf(rb);
-		clen = IRCD_MIN(sizeof(buf->data), len);
-		memcpy(buf->data, data, clen);
-		buf->len += clen;
-		rb->len += clen;
-		len -= clen;
-		data = (data + clen);
-	}
+	rb_rawbuf_t *buf;
+	buf = rb_rawbuf_newbuf(rb);
+	buf->data = rb_malloc(len);
+	buf->len = len;
+	memcpy(buf->data, in, len);
+	rb->len += buf->len;	
 }
 
-
+#if 0
+/* this is still broken..if somebody wants to use it, they need to fix it */
 size_t
 rb_rawbuf_get(rb_rawbuf_head_t * rb, void *data, size_t len)
 {
@@ -222,31 +202,29 @@ rb_rawbuf_get(rb_rawbuf_head_t * rb, void *data, size_t len)
 	buf = rb->list.head->data;
 
 	if(buf->flushing == true)
-		ptr = (void *)(buf->data + rb->written);
+		ptr = (void *)(buf->data + buf->written);
 	else
 		ptr = buf->data;
 
-	if(len > buf->len)
-		cpylen = buf->len;
-	else
-		cpylen = len;
+	cpylen = IRCD_MIN(len, buf->len);
 
 	memcpy(data, ptr, cpylen);
 
 	if(cpylen == buf->len)
 	{
-		rb->written = 0;
+		buf->written = 0;
 		rb_rawbuf_done(rb, buf);
-		rb->len -= len;
+		rb->len -= cpylen;
 		return cpylen;
 	}
 
 	buf->flushing = true;
 	buf->len -= cpylen;
 	rb->len -= cpylen;
-	rb->written += cpylen;
+	buf->written += cpylen;
 	return cpylen;
 }
+#endif
 
 size_t
 rb_rawbuf_length(rb_rawbuf_head_t * rb)

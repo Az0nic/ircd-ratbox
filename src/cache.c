@@ -347,7 +347,10 @@ cache_user_motd(void)
 	struct stat sb;
 	struct tm *local_tm;
 
-	if(stat(MPATH, &sb) == 0)
+	if(ConfigFileEntry.motd_path == NULL)
+		return;
+
+	if(stat(ConfigFileEntry.motd_path, &sb) == 0)
 	{
 		local_tm = gmtime(&sb.st_mtime);
 
@@ -367,6 +370,8 @@ cache_user_motd(void)
 void
 cache_oper_motd(void)
 {
+	if(ConfigFileEntry.oper_motd_path == NULL)
+		return;
 	free_cachefile(oper_motd);
 	oper_motd = cache_file(ConfigFileEntry.oper_motd_path, "oper.motd", 0);
 }

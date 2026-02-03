@@ -32,12 +32,11 @@
 #include "send.h"
 #include "numeric.h"
 
-#define DNS_IDTABLE_SIZE 0x2000
 
 #define DNS_HOST	((char)'H')
 #define DNS_REVERSE	((char)'I')
 
-static void submit_dns(const char, uint16_t id, int aftype, const char *addr);
+static void submit_dns(const char, uint32_t id, int aftype, const char *addr);
 static int start_resolver(void);
 static void parse_dns_reply(rb_helper * helper);
 static void restart_resolver_cb(rb_helper * helper);
@@ -46,30 +45,67 @@ static rb_helper *dns_helper;
 
 struct dnsreq
 {
+	rb_dlink_node node;
 	DNSCB *callback;
 	void *data;
+	uint32_t id;
+	uint32_t hashv;
 };
 
-static struct dnsreq querytable[DNS_IDTABLE_SIZE];
 
-static uint16_t
-assign_dns_id(void)
+#define RB_DNS_HASH_BITS 12
+#define RB_DNS_HASH_SIZE (1UL << RB_DNS_HASH_BITS)
+#define RB_DNS_HASH_MASK (RB_DNS_HASH_SIZE-1)
+
+
+#define rb_hash_dns(x) (((unsigned long)x ^ ((unsigned long)x >> RB_DNS_HASH_BITS) ^ ((unsigned long)x >> (RB_DNS_HASH_BITS * 2))) & RB_DNS_HASH_MASK)
+
+
+static rb_dlink_list query_hash[RB_DNS_HASH_SIZE];
+
+
+static __rb_must_check struct dnsreq *
+get_request_from_id(uint32_t id)
 {
-	static uint16_t id = 1;
-	int loopcnt = 0;
-	while(1)
-	{
-		if(++loopcnt > DNS_IDTABLE_SIZE)
-			return 0;
-		if(id < DNS_IDTABLE_SIZE - 1 || id == 0)
-			id++;
-		else
-			id = 1;
-		if(querytable[id].callback == NULL)
-			break;
-	}
-	return (id);
+	struct dnsreq *req;
+        rb_dlink_list *hlist;
+        rb_dlink_node *ptr;
+
+        hlist = &query_hash[rb_hash_dns(id)];
+
+        if(hlist->head == NULL)
+                return NULL;
+
+        RB_DLINK_FOREACH(ptr, hlist->head)
+        {
+                req = ptr->data;
+                if(req->id == id)
+                        return req;
+        }
+        return NULL;
 }
+
+
+
+static struct dnsreq *
+allocate_dns_request(DNSCB *cb, void *data)
+{
+	struct dnsreq *req;
+	static uint32_t id = 0;
+
+	id++;
+	if(id == 0)
+		id++;
+	
+	req = rb_malloc(sizeof(struct dnsreq));
+	req->id = id;
+	req->hashv = rb_hash_dns(id);
+	req->callback = cb;
+	req->data = data;	
+	rb_dlinkAdd(req, &req->node, &query_hash[req->hashv]);
+	return req;
+}
+
 
 static inline void
 check_resolver(void)
@@ -79,41 +115,49 @@ check_resolver(void)
 }
 
 static void
-failed_resolver(uint16_t xid)
+failed_resolver(uint32_t xid)
 {
 	struct dnsreq *req;
+	DNSCB *cb;
+	void *data;
+	uint32_t hashv;
 
-	req = &querytable[xid];
-	if(req->callback == NULL)
+	req = get_request_from_id(xid);
+
+	if(req == NULL)
 		return;
 
-	req->callback("FAILED", 0, 0, req->data);
-	req->callback = NULL;
-	req->data = NULL;
+	cb = req->callback;
+	data = req->data;
+	hashv = req->hashv;	
+	
+	rb_dlinkDelete(&req->node, &query_hash[hashv]);
+	rb_free(req);
+
+	if(cb != NULL)
+		cb("FAILED", 0, 0, data);
+	
 }
 
 void
-cancel_lookup(uint16_t xid)
+cancel_lookup(uint32_t xid)
 {
-	querytable[xid].callback = NULL;
-	querytable[xid].data = NULL;
+	struct dnsreq *req;
+	req = get_request_from_id(xid);
+	if(req == NULL)
+		return;
+	rb_dlinkDelete(&req->node, &query_hash[req->hashv]);
+	rb_free(req);
 }
 
-uint16_t
+uint32_t
 lookup_hostname(const char *hostname, int aftype, DNSCB * callback, void *data)
 {
 	struct dnsreq *req;
 	int aft;
-	uint16_t nid;
 	check_resolver();
 
-	if((nid = assign_dns_id()) == 0)
-		return 0;
-
-	req = &querytable[nid];
-
-	req->callback = callback;
-	req->data = data;
+	req = allocate_dns_request(callback, data);
 
 #ifdef RB_IPV6
 	if(aftype == AF_INET6)
@@ -122,25 +166,18 @@ lookup_hostname(const char *hostname, int aftype, DNSCB * callback, void *data)
 #endif
 		aft = 4;
 
-	submit_dns(DNS_HOST, nid, aft, hostname);
-	return (nid);
+	submit_dns(DNS_HOST, req->id, aft, hostname);
+	return (req->id);
 }
 
-uint16_t
+uint32_t
 lookup_ip(const char *addr, int aftype, DNSCB * callback, void *data)
 {
 	struct dnsreq *req;
 	int aft;
-	uint16_t nid;
 	check_resolver();
 
-	if((nid = assign_dns_id()) == 0)
-		return 0;
-		
-	req = &querytable[nid];
-
-	req->callback = callback;
-	req->data = data;
+	req = allocate_dns_request(callback, data);
 
 #ifdef RB_IPV6
 	if(aftype == AF_INET6)
@@ -149,41 +186,44 @@ lookup_ip(const char *addr, int aftype, DNSCB * callback, void *data)
 #endif
 		aft = 4;
 
-	submit_dns(DNS_REVERSE, nid, aft, addr);
-	return (nid);
+	submit_dns(DNS_REVERSE, req->id, aft, addr);
+	return (req->id);
 }
 
 static void
 results_callback(const char *callid, const char *status, const char *aftype, const char *results)
 {
+	DNSCB *cb;
+	void *data;
 	struct dnsreq *req;
-	uint16_t nid;
+	uint32_t nid;
 	int st;
 	int aft;
-	long lnid = strtol(callid, NULL, 16);
 
-	if(lnid > DNS_IDTABLE_SIZE || lnid == 0)
+	nid = strtoul(callid, 0, 16);
+
+	req = get_request_from_id(nid);
+	if(req == NULL)
 		return;
-	nid = (uint16_t)lnid;
-	req = &querytable[nid];
+		
 	st = atoi(status);
 	aft = atoi(aftype);
-	if(req->callback == NULL)
-	{
-		/* got cancelled..oh well */
-		req->data = NULL;
-		return;
-	}
+
 #ifdef RB_IPV6
 	if(aft == 6)
 		aft = AF_INET6;
 	else
 #endif
 		aft = AF_INET;
+	
+	cb = req->callback;
+	data = req->data;
 
-	req->callback(results, st, aft, req->data);
-	req->callback = NULL;
-	req->data = NULL;
+	rb_dlinkDelete(&req->node, &query_hash[req->hashv]);
+	rb_free(req);
+
+	if(cb != NULL)
+		cb(results, st, aft, data);
 }
 
 
@@ -301,7 +341,7 @@ parse_dns_reply(rb_helper * helper)
 }
 
 static void
-submit_dns(char type, uint16_t nid, int aftype, const char *addr)
+submit_dns(char type, uint32_t nid, int aftype, const char *addr)
 {
 	if(dns_helper == NULL)
 	{

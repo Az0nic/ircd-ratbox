@@ -68,6 +68,7 @@ typedef enum  _rb_tls_ver
         RB_TLS_VER_TLS1,
         RB_TLS_VER_TLS1_1,
         RB_TLS_VER_TLS1_2,
+        RB_TLS_VER_TLS1_3,
         RB_TLS_VER_LAST,
 } rb_tls_ver_t;
 

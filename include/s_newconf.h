@@ -200,7 +200,7 @@ struct server_conf
 	int flags;
 	int servers;
 
-	uint16_t dns_query;
+	uint32_t dns_query;
 };
 
 #define SERVER_ILLEGAL		0x0001

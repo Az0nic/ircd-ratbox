@@ -36,7 +36,9 @@ typedef struct _rb_rawbuf_head rb_rawbuf_head_t;
 void rb_init_rawbuffers(void);
 void rb_free_rawbuffer(rb_rawbuf_head_t *);
 rb_rawbuf_head_t *rb_new_rawbuffer(void);
+#if 0
 size_t rb_rawbuf_get(rb_rawbuf_head_t *, void *data, size_t len);
+#endif
 void rb_rawbuf_append(rb_rawbuf_head_t *, void *data, size_t len);
 ssize_t rb_rawbuf_flush(rb_rawbuf_head_t *, rb_fde_t *F);
 size_t rb_rawbuf_length(rb_rawbuf_head_t * rb);
