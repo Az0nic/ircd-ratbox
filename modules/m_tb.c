@@ -77,7 +77,7 @@ ms_tb(struct Client *client_p, struct Client *source_p, int parc, const char *pa
 	if(chptr == NULL)
 		return 0;
 
-	newtopicts = atol(parv[2]);
+	newtopicts = rb_parse_time(parv[2]);
 
 	if(parc == 5)
 	{

@@ -385,7 +385,7 @@ ms_join(struct Client *client_p, struct Client *source_p, int parc, const char *
 	if((chptr = get_or_create_channel(source_p, parv[2], &isnew)) == NULL)
 		return 0;
 
-	newts = atol(parv[1]);
+	newts = rb_parse_time(parv[1]);
 	oldts = chptr->channelts;
 
 	/* making a channel TS0 */
@@ -504,7 +504,7 @@ ms_sjoin(struct Client *client_p, struct Client *source_p, int parc, const char 
 	mode.key[0] = '\0';
 	mode.mode = mode.limit = 0;
 
-	newts = atol(parv[1]);
+	newts = rb_parse_time(parv[1]);
 
 	s = parv[3];
 	while(*s)

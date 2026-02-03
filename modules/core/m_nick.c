@@ -293,7 +293,7 @@ mc_nick(struct Client *client_p, struct Client *source_p, int parc, const char *
 		return 0;
 	}
 
-	newts = atol(parv[2]);
+	newts = rb_parse_time(parv[2]);
 	target_p = find_client(parv[1]);
 
 	/* if the nick doesnt exist, allow it and process like normal */
@@ -370,7 +370,7 @@ ms_nick(struct Client *client_p, struct Client *source_p, int parc, const char *
 		 */
 	}
 
-	newts = atol(parv[3]);
+	newts = rb_parse_time(parv[3]);
 
 	target_p = find_client(parv[1]);
 
@@ -415,7 +415,7 @@ ms_uid(struct Client *client_p, struct Client *source_p, int parc, const char *p
 	struct Client *target_p;
 	time_t newts = 0;
 
-	newts = atol(parv[3]);
+	newts = rb_parse_time(parv[3]);
 
 	if(parc != 10)
 	{
@@ -504,7 +504,7 @@ ms_save(struct Client *client_p, struct Client *source_p, int parc, const char *
 		sendto_realops_flags(UMODE_DEBUG, L_ALL,
 				     "Ignored noop SAVE message for %s from %s",
 				     target_p->name, source_p->name);
-	else if(target_p->tsinfo == atol(parv[2]))
+	else if(target_p->tsinfo == rb_parse_time(parv[2]))
 		save_user(client_p, source_p, target_p);
 	else
 		sendto_realops_flags(UMODE_SKILL, L_ALL,

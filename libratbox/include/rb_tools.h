@@ -458,6 +458,23 @@ rb_dlinkDestroy(rb_dlink_node *node, rb_dlink_list *list)
 	rb_free(node);
 }
 
+static inline time_t
+rb_parse_time(const char *s)
+{
+	time_t t;
+#if SIZEOF_LONG == SIZEOF_TIME_T
+	t = (time_t)atol(s);
+#else
+	intmax_t v;
+	v = strtoimax(s, NULL, 10);
+	t = (time_t)v;
+	/* make overflow clamp to 0 */
+	if((intmax_t)t != v)
+		return 0;
+#endif
+	return t;	
+}
+
 
 typedef struct _rb_zstring
 {
