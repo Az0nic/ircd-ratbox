@@ -472,7 +472,7 @@ rb_parse_time(const char *s)
 	if((intmax_t)t != v)
 		return 0;
 #endif
-	return t;	
+	return t;
 }
 
 
