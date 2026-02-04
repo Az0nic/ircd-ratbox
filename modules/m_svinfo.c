@@ -80,7 +80,7 @@ ms_svinfo(struct Client *client_p, struct Client *source_p, int parc, const char
 	 * since we're here, might as well call rb_set_time() while we're at it
 	 */
 	rb_set_time();
-	theirtime = atol(parv[4]);
+	theirtime = rb_parse_time(parv[4]);
 	deltat = labs(theirtime - rb_current_time());
 
 	if(deltat > ConfigFileEntry.ts_max_delta)

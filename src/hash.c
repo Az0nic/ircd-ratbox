@@ -153,8 +153,6 @@ fnv_hash(const unsigned char *s, unsigned int bits, size_t unused)
 	return h;
 }
 
-#if 1				/* unused currently */
-
 static uint32_t
 fnv_hash_len(const unsigned char *s, unsigned int bits, size_t len)
 {
@@ -168,7 +166,6 @@ fnv_hash_len(const unsigned char *s, unsigned int bits, size_t len)
 	h = (h >> (32 - bits)) ^ (h & ((1U << bits) - 1));
 	return h;
 }
-#endif
 
 static uint32_t
 fnv_hash_upper_len(const unsigned char *s, unsigned int bits, size_t len)

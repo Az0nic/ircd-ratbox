@@ -329,7 +329,7 @@ set_kline(struct Client *source_p, const char *user, const char *host, const cha
 {
 	char buffer[IRCD_BUFSIZE];
 	struct ConfItem *aconf;
-	const char *current_date;
+	char current_date[MAX_DATE_STRING];
 	char *reason;
 	char *oper_reason;
 
@@ -342,7 +342,7 @@ set_kline(struct Client *source_p, const char *user, const char *host, const cha
 		return;
 
 	rb_set_time();
-	current_date = smalldate(rb_current_time());
+	smalldate(rb_current_time(), current_date, sizeof(current_date));
 	aconf = make_conf();
 	aconf->status = CONF_KILL;
 	aconf->user = rb_strdup(user);

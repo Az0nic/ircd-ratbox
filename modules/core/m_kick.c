@@ -67,7 +67,6 @@ m_kick(struct Client *client_p, struct Client *source_p, int parc, const char *p
 	int chasing = 0;
 	char *comment;
 	const char *name;
-	char *p = NULL;
 	const char *user;
 	static char buf[IRCD_BUFSIZE];
 
@@ -75,9 +74,6 @@ m_kick(struct Client *client_p, struct Client *source_p, int parc, const char *p
 		flood_endgrace(source_p);
 
 	*buf = '\0';
-	if((p = strchr(parv[1], ',')))
-		*p = '\0';
-
 	name = parv[1];
 
 	chptr = find_channel(name);
@@ -134,9 +130,6 @@ m_kick(struct Client *client_p, struct Client *source_p, int parc, const char *p
 		 *     -Dianora
 		 */
 	}
-
-	if((p = strchr(parv[2], ',')))
-		*p = '\0';
 
 	user = parv[2];
 

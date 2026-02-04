@@ -164,7 +164,7 @@ me_rsfnc(struct Client *client_p, struct Client *source_p, int parc, const char 
 	if(!clean_nick(parv[2]))
 		return 0;
 
-	curts = atol(parv[4]);
+	curts = rb_parse_time(parv[4]);
 
 	/* if tsinfo is different from what it was when services issued the
 	 * RSFNC, then we ignore it.  This can happen when a client changes
@@ -198,7 +198,7 @@ me_rsfnc(struct Client *client_p, struct Client *source_p, int parc, const char 
 		exit_client(NULL, exist_p, &me, buf);
 	}
 
-	newts = atol(parv[3]);
+	newts = rb_parse_time(parv[3]);
 
 	/* timestamp is older than 15mins, ignore it */
 	if(newts < (rb_current_time() - 900))

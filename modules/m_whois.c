@@ -177,13 +177,10 @@ static void
 do_whois(struct Client *client_p, struct Client *source_p, int parc, const char *parv[])
 {
 	struct Client *target_p;
-	char *nick;
-	char *p = NULL;
+	const char *nick;
 	int operspy = 0;
 
-	nick = LOCAL_COPY(parv[1]);
-	if((p = strchr(nick, ',')))
-		*p = '\0';
+	nick = parv[1];
 
 	if(IsOperSpy(source_p) && *nick == '!')
 	{

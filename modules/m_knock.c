@@ -70,7 +70,7 @@ static int
 m_knock(struct Client *client_p, struct Client *source_p, int parc, const char *parv[])
 {
 	struct Channel *chptr;
-	char *p, *name;
+	const char *name;
 
 	if(MyClient(source_p) && ConfigChannel.use_knock == 0)
 	{
@@ -78,11 +78,7 @@ m_knock(struct Client *client_p, struct Client *source_p, int parc, const char *
 		return 0;
 	}
 
-	name = LOCAL_COPY(parv[1]);
-
-	/* dont allow one knock to multiple chans */
-	if((p = strchr(name, ',')))
-		*p = '\0';
+	name = parv[1];
 
 	if(!IsChannelName(name))
 	{

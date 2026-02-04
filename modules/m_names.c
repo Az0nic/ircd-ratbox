@@ -68,24 +68,19 @@ m_names(struct Client *client_p, struct Client *source_p, int parc, const char *
 {
 	static time_t last_used = 0;
 	struct Channel *chptr = NULL;
-	char *s;
 
 	if(parc > 1 && !EmptyString(parv[1]))
 	{
-		char *p = LOCAL_COPY(parv[1]);
-		if((s = strchr(p, ',')))
-			*s = '\0';
-
-		if(!check_channel_name(p))
+		if(!check_channel_name(parv[1]))
 		{
-			sendto_one_numeric(source_p, ERR_BADCHANNAME, form_str(ERR_BADCHANNAME), p);
+			sendto_one_numeric(source_p, ERR_BADCHANNAME, form_str(ERR_BADCHANNAME), parv[1]);
 			return 0;
 		}
 
-		if((chptr = find_channel(p)) != NULL)
+		if((chptr = find_channel(parv[1])) != NULL)
 			channel_member_names(chptr, source_p, 1);
 		else
-			sendto_one_numeric(source_p, s_RPL(RPL_ENDOFNAMES), p);
+			sendto_one_numeric(source_p, s_RPL(RPL_ENDOFNAMES), parv[1]);
 	}
 	else
 	{
