@@ -1439,7 +1439,7 @@ stats_servlinks(struct Client *source_p)
 			   "? :Sent total : %7.2f %s", _GMKv((sent / 1024)), _GMKs((sent / 1024)));
 
 	sendto_one_numeric(source_p, RPL_STATSDEBUG,
-			   "? :Recv total : %7.2f %s", _GMKv((sent / 1024)), _GMKs((receive / 1024)));
+			   "? :Recv total : %7.2f %s", _GMKv((receive / 1024)), _GMKs((receive / 1024)));
 
 	uptime = (rb_current_time() - startup_time);
 
