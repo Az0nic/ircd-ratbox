@@ -617,7 +617,9 @@ output_hash(struct Client *source_p, const char *name, unsigned long length, uns
 	{
 		sendto_one_numeric(source_p, RPL_STATSDEBUG,
 				   "B :Average depth: %.3f%%/%.3f%% Highest depth: %lu",
-				   (float) (total / (length - counts[0])), (float) (total / length), deepest);
+				   (float) total / (float) (length - counts[0]),
+				   (float) total / (float) length,
+				   deepest);
 	}
 
 	for(unsigned long i = 1; i < IRCD_MIN(11, deepest + 1); i++)
