@@ -43,6 +43,8 @@ rb_strlcat(char *dest, const char *src, size_t count)
 	size_t len = strlen(src);
 	size_t res = dsize + len;
 
+	assert(dsize >= count);
+
 	dest += dsize;
 	count -= dsize;
 	if(len >= count)
