@@ -103,7 +103,7 @@ rb_strnlen(const char *s, size_t n)
 	return p;
 }
 #else
-#define rb_strnlen(x) strnlen(x)
+#define rb_strnlen(s, n) strnlen(s, n)
 #endif
 
 static inline char *
