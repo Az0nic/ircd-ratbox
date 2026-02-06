@@ -97,11 +97,12 @@ rb_strndup(const char *x, size_t y)
 {
 	char *ret;
 #ifndef RB_HAVE_STRNDUP
-	ret = malloc(y);
+	size_t len = strnlen(x, y);
+	ret = malloc(len + 1);
 	if(rb_unlikely(ret == NULL))
 		rb_outofmemory();
-	rb_strlcpy(ret, x, y);
-	return (ret);
+	ret[len] = '\0';
+	return memcpy(x, y, len);
 #else
 	ret = strndup(x, y);
 	if(rb_unlikely(ret == NULL))
