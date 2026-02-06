@@ -13,7 +13,7 @@ Notes for those among you, who don't bother reading docs:
    will be installed along-side your ircd!
  * Run bantool after each upgrade to ensure your database is in a current format.
    Failure to do so will result in weird, unexplained crashes.
- * Its is _highly_ recommended that you `make clean` or even better `make distclean`
+ * It is _highly_ recommended that you `make clean` or even better `make distclean`
    in your current source tree before running `./configure`
 
 
