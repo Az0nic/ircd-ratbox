@@ -92,12 +92,24 @@ rb_realloc(void *x, size_t y)
 	return (ret);
 }
 
+#ifndef RB_HAVE_STRNLEN
+size_t static 
+rb_strnlen(const char *s, size_t n)
+{
+	size_t p;
+	for (p = 0; p < n && s[p]; p++) {}
+	return p;
+}
+#else
+#define rb_strnlen(x) strnlen(x)
+#endif
+
 static inline char *
 rb_strndup(const char *x, size_t y)
 {
 	char *ret;
 #ifndef RB_HAVE_STRNDUP
-	size_t len = strnlen(x, y);
+	size_t len = rb_strnlen(x, y);
 	ret = malloc(len + 1);
 	if(rb_unlikely(ret == NULL))
 		rb_outofmemory();
