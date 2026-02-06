@@ -43,6 +43,8 @@ rb_strlcat(char *dest, const char *src, size_t count)
 	size_t len = strlen(src);
 	size_t res = dsize + len;
 
+	assert(dsize >= count);
+
 	dest += dsize;
 	count -= dsize;
 	if(len >= count)
@@ -101,7 +103,7 @@ rb_strnlen(const char *s, size_t n)
 	return p;
 }
 #else
-#define rb_strnlen(x) strnlen(x)
+#define rb_strnlen(s, n) strnlen(s, n)
 #endif
 
 static inline char *
