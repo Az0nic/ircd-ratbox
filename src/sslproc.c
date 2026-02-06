@@ -477,6 +477,7 @@ ssl_process_cmd_recv(ssl_ctl_t * ctl)
 			ircd_ssl_ok = false;
 			ilog(L_MAIN, "%s", cannot_setup_ssl);
 			sendto_realops_flags(UMODE_ALL, L_ALL, "%s", cannot_setup_ssl);
+			break;
 		case 'U':
 			zlib_ok = false;
 			ircd_ssl_ok = false;
