@@ -95,6 +95,13 @@ m_userhost(struct Client *client_p, struct Client *source_p, int parc, const cha
 
 		}
 	}
+	if(response[0] != '\0')
+	{
+		size_t len = strlen(response);
+
+		if(len > 0 && response[len - 1] == ' ')
+			response[len - 1] = '\0';
+	}
 	sendto_one_numeric(source_p, s_RPL(RPL_USERHOST), response);
 	return 0;
 }
