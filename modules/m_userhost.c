@@ -70,6 +70,8 @@ m_userhost(struct Client *client_p, struct Client *source_p, int parc, const cha
 
 		if((target_p = find_person(parv[i])) != NULL)
 		{
+			if(!EmptyString(response))
+				rb_strlcat(response, " ", sizeof(response));
 			/*
 			 * Show real IP for USERHOST on yourself.
 			 * This is needed for things like mIRC, which do a server-based
@@ -78,7 +80,7 @@ m_userhost(struct Client *client_p, struct Client *source_p, int parc, const cha
 			 */
 			if(MyClient(target_p) && (target_p == source_p))
 			{
-				rb_snprintf_append(response, sizeof(response), "%s%s=%c%s@%s ",
+				rb_snprintf_append(response, sizeof(response), "%s%s=%c%s@%s",
 						   target_p->name,
 						   IsOper(target_p) ? "*" : "",
 						   (target_p->user->away) ? '-' : '+',
@@ -86,7 +88,7 @@ m_userhost(struct Client *client_p, struct Client *source_p, int parc, const cha
 			}
 			else
 			{
-				rb_snprintf_append(response, sizeof(response), "%s%s=%c%s@%s ",
+				rb_snprintf_append(response, sizeof(response), "%s%s=%c%s@%s",
 						   target_p->name,
 						   IsOper(target_p) ? "*" : "",
 						   (target_p->user->away) ? '-' : '+',

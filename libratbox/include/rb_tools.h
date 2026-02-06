@@ -116,7 +116,7 @@ rb_strndup(const char *x, size_t y)
 	if(rb_unlikely(ret == NULL))
 		rb_outofmemory();
 	ret[len] = '\0';
-	return memcpy(x, y, len);
+	return memcpy(ret, y, len);
 #else
 	ret = strndup(x, y);
 	if(rb_unlikely(ret == NULL))
