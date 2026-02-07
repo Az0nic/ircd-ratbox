@@ -446,7 +446,7 @@ rb_linebuf_get(rb_buf_head_t * bufhead, char *buf, size_t buflen, bool partial, 
 	size_t cpylen;
 	char *start, *ch;
 
-	assert(buflen>0);
+	lrb_assert(buflen > 0);
 
 	/* make sure we have a line */
 	if(bufhead->list.head == NULL)
