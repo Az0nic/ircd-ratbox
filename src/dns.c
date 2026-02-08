@@ -287,7 +287,7 @@ parse_nameservers(char **parv, int parc)
 		rb_dlinkDestroy(ptr, &nameservers);
 	}
 
-	for(i = 2; i < parc; i++)
+	for(i = 1; i < parc; i++)
 	{
 		server = rb_strdup(parv[i]);
 		rb_dlinkAddTailAlloc(server, &nameservers);
@@ -408,4 +408,3 @@ rehash_resolver(void)
 {
 	rb_helper_write(dns_helper, "R");
 }
-
