@@ -261,7 +261,7 @@ enum {
 #define SendRejNotice(x)	((x)->umodes & UMODE_REJ)
 #define SendSkillNotice(x)	((x)->umodes & UMODE_SKILL)
 #define SendFullNotice(x)	((x)->umodes & UMODE_FULL)
-#define SendSpyNotice(x)	((x)->umodes & UMODE_SPY)1
+#define SendSpyNotice(x)	((x)->umodes & UMODE_SPY)
 #define SendDebugNotice(x)	((x)->umodes & UMODE_DEBUG)
 #define SendNickChange(x)	((x)->umodes & UMODE_NCHANGE)
 #define SetWallops(x)		((x)->umodes |= UMODE_WALLOP)
