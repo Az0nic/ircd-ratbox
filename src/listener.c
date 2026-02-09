@@ -427,12 +427,14 @@ add_connection(struct Listener *listener, rb_fde_t * F, struct sockaddr *sai, st
 		        int saved_errno = errno;
 			log_listener("creating SSL/TLS socket pairs %s:%s",
 				     get_listener_name(listener), strerror(saved_errno));
+			rb_close(F);
 			free_client(new_client);
 			return;
 		}
 		new_client->localClient->ssl_ctl = start_ssld_accept(F, xF[1], new_client->localClient->connid);	/* this will close F for us */
 		if(new_client->localClient->ssl_ctl == NULL)
 		{
+			rb_close(F);
 			rb_close(xF[0]);
 			rb_close(xF[1]);
 			free_client(new_client);
