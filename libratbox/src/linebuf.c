@@ -439,7 +439,7 @@ rb_linebuf_parse(rb_buf_head_t * bufhead, char *data, size_t len, bool raw)
  * get the next buffer from our line. For the time being it will copy
  * data into the given buffer and free the underlying linebuf.
  */
-ssize_t
+size_t
 rb_linebuf_get(rb_buf_head_t * bufhead, char *buf, size_t buflen, bool partial, bool raw)
 {
 	rb_buf_line_t *bufline;
@@ -449,6 +449,10 @@ rb_linebuf_get(rb_buf_head_t * bufhead, char *buf, size_t buflen, bool partial, 
 	/* make sure we have a line */
 	if(bufhead->list.head == NULL)
 		return 0;	/* Obviously not.. hrm. */
+
+	/* make sure we have a buffer */
+	if(buf == NULL || buflen == 0)
+		return 0;
 
 	bufline = bufhead->list.head->data;
 
@@ -490,13 +494,11 @@ rb_linebuf_get(rb_buf_head_t * bufhead, char *buf, size_t buflen, bool partial, 
 	if(raw == false)
 		buf[cpylen] = '\0';
 
-	lrb_assert(cpylen >= 0);
-
 	/* Deallocate the line */
 	rb_linebuf_done_line(bufhead, bufline, bufhead->list.head);
 
 	/* return how much we copied */
- 	return (ssize_t)cpylen;
+	return cpylen;
 }
 
 /*

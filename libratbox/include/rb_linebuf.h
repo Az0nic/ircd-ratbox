@@ -65,7 +65,7 @@ void rb_linebuf_init(void);
 void rb_linebuf_newbuf(rb_buf_head_t *);
 void rb_linebuf_donebuf(rb_buf_head_t *);
 int rb_linebuf_parse(rb_buf_head_t *, char *, size_t, bool);
-ssize_t rb_linebuf_get(rb_buf_head_t * bufhead, char *buf, size_t buflen, bool partial, bool raw);
+size_t rb_linebuf_get(rb_buf_head_t * bufhead, char *buf, size_t buflen, bool partial, bool raw);
 void rb_linebuf_putmsg(rb_buf_head_t *, const char *, va_list *, const char *, ...);
 void rb_linebuf_put(rb_buf_head_t *, const char *, ...);
 void rb_linebuf_putbuf(rb_buf_head_t * bufhead, const char *buffer);
