@@ -47,6 +47,7 @@ struct Server
 	rb_dlink_list users;
 	int caps;		/* capabilities bit-field */
 	char *fullcaps;
+        char *version;		/* server version string */
 };
 
 struct ZipStats
@@ -81,10 +82,10 @@ struct Client
 	/* client->name is the unique name for a client nick or host */
 	const char *name;
 	char *certfp;
-	/* 
-	 * client->username is the username from ident or the USER message, 
-	 * If the client is idented the USER message is ignored, otherwise 
-	 * the username part of the USER message is put here prefixed with a 
+	/*
+	 * client->username is the username from ident or the USER message,
+	 * If the client is idented the USER message is ignored, otherwise
+	 * the username part of the USER message is put here prefixed with a
 	 * tilde depending on the I:line, Once a client has registered, this
 	 * field should be considered read-only.
 	 */
@@ -124,7 +125,7 @@ struct LocalUser
 	rb_buf_head_t *buf_sendq;
 	rb_buf_head_t *buf_recvq;
 
-	
+
 	char *passwd;
 	char *opername;
 	char *fullcaps;
@@ -159,7 +160,7 @@ struct LocalUser
 	/* challenge stuff */
 	uint8_t *chal_resp;
 	time_t chal_time;
-	
+
 	/* clients allowed to talk through +g */
 	rb_dlink_list allow_list;
 
@@ -180,13 +181,13 @@ struct LocalUser
 	int actually_read;	/* how many we've actually read in this second */
 	int sent_parsed;	/* how many messages we've parsed in this second */
 
-	int join_leave_count;	/* count of JOIN/LEAVE in less than 
+	int join_leave_count;	/* count of JOIN/LEAVE in less than
 				   MIN_JOIN_LEAVE_TIME seconds */
-	time_t last_join_time;	/* when this client last 
+	time_t last_join_time;	/* when this client last
 				   joined a channel */
 	time_t last_knock;	/* time of last knock */
 	time_t last_leave_time;	/* when this client last * left a channel */
-	unsigned int oper_warn_count_down; /* warn opers of this possible 
+	unsigned int oper_warn_count_down; /* warn opers of this possible
 					   spambot every time this gets to 0 */
 
 	uint32_t localflags;
