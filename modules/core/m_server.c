@@ -43,13 +43,14 @@
 #include "s_user.h"
 #include "reject.h"
 #include "sslproc.h"
+#include "version.h"
 
 static int mr_server(struct Client *, struct Client *, int, const char **);
 static int ms_server(struct Client *, struct Client *, int, const char **);
 static int ms_sid(struct Client *, struct Client *, int, const char **);
 
 struct Message server_msgtab = {
-	.cmd = "SERVER", 
+	.cmd = "SERVER",
 	.handlers[UNREGISTERED_HANDLER] =       { .handler = mr_server, .min_para = 4 },
 	.handlers[CLIENT_HANDLER] =             { mm_ignore },
 	.handlers[RCLIENT_HANDLER] =            { mm_ignore },
@@ -59,7 +60,7 @@ struct Message server_msgtab = {
 };
 
 struct Message sid_msgtab = {
-	.cmd = "SID", 
+	.cmd = "SID",
 	.handlers[UNREGISTERED_HANDLER] =       { mm_ignore },
 	.handlers[CLIENT_HANDLER] =             { mm_ignore },
 	.handlers[RCLIENT_HANDLER] =            { mm_ignore },
@@ -110,7 +111,7 @@ mr_server(struct Client *client_p, struct Client *source_p, int parc, const char
 	hop = atoi(parv[2]);
 	rb_strlcpy(info, parv[3], sizeof(info));
 
-	/* 
+	/*
 	 * Reject a direct nonTS server connection if we're TS_ONLY -orabidoo
 	 */
 	if(!DoesTS(client_p))
@@ -298,7 +299,7 @@ ms_server(struct Client *client_p, struct Client *source_p, int parc, const char
 		 * that already exists, then sends you a client burst, you squit the
 		 * server, but you keep getting the burst of clients on a server that
 		 * doesnt exist, although ircd can handle it, its not a realistic
-		 * solution.. --fl_ 
+		 * solution.. --fl_
 		 */
 		/* It is behind a host-masked server. Completely ignore the
 		 * server message(don't propagate or we will delink from whoever
@@ -367,7 +368,7 @@ ms_server(struct Client *client_p, struct Client *source_p, int parc, const char
 	 *            name = "irc.bighub.net";
 	 *            hub_mask="*";
 	 *            ...
-	 * 
+	 *
 	 * That would allow "irc.bighub.net" to introduce anything it wanted..
 	 *
 	 * However
@@ -412,6 +413,13 @@ ms_server(struct Client *client_p, struct Client *source_p, int parc, const char
 	target_p->name = scache_add(name);
 
 	set_server_gecos(target_p, info);
+        target_p->serv->version = rb_strdup(info);
+
+        /* DEBUG: Print what we stored */
+        sendto_realops_flags(UMODE_ALL, L_ALL,
+           "DEBUG: Stored version for %s: [%s]",
+           target_p->name,
+           target_p->serv->version ? target_p->serv->version : "NULL");
 
 	target_p->servptr = source_p;
 
@@ -545,6 +553,13 @@ ms_sid(struct Client *client_p, struct Client *source_p, int parc, const char *p
 	target_p->hopcount = atoi(parv[2]);
 	strcpy(target_p->id, parv[3]);
 	set_server_gecos(target_p, parv[4]);
+        target_p->serv->version = rb_strdup(parv[4]);
+
+        /* DEBUG: Print what we stored */
+        sendto_realops_flags(UMODE_ALL, L_ALL,
+            "DEBUG: Stored version for %s: [%s]",
+             target_p->name,
+             target_p->serv->version ? target_p->serv->version : "NULL");
 
 	target_p->servptr = source_p;
 	SetServer(target_p);
@@ -651,7 +666,7 @@ set_server_gecos(struct Client *client_p, const char *info)
 
 /*
  * server_exists()
- * 
+ *
  * inputs	- servername
  * output	- 1 if server exists, 0 if doesnt exist
  */
@@ -734,7 +749,7 @@ check_server(const char *name, struct Client *client_p)
 	{
 		return NEED_SSL;
 	}
-	
+
 	if(!EmptyString(server_p->certfp))
 	{
 		if(EmptyString(client_p->certfp) || strcasecmp(server_p->certfp, client_p->certfp))
@@ -742,7 +757,7 @@ check_server(const char *name, struct Client *client_p)
                 	return INVALID_CERTFP;
                 }
         }
- 
+
 
 	attach_server_conf(client_p, server_p);
 
@@ -892,7 +907,7 @@ burst_modes_TS6(struct Client *client_p, struct Channel *chptr, rb_dlink_list * 
 
 /*
  * burst_TS5
- * 
+ *
  * inputs	- client (server) to send nick towards
  * 		- client to send nick for
  * output	- NONE
@@ -968,7 +983,7 @@ burst_TS5(struct Client *client_p)
 					tlen++;
 				if(is_voiced(msptr))
 					tlen++;
-					
+
 				if(cur_len + tlen >= IRCD_BUFSIZE - 3)
 				{
 					t--;
@@ -979,7 +994,7 @@ burst_TS5(struct Client *client_p)
 				}
 
 				sprintf(t, "%s%s ", find_channel_status(msptr, 1), msptr->client_p->name);
-				
+
 				cur_len += tlen;
 				t += tlen;
 			}
@@ -1014,7 +1029,7 @@ burst_TS5(struct Client *client_p)
 
 /*
  * burst_TS6
- * 
+ *
  * inputs	- client (server) to send nick towards
  * 		- client to send nick for
  * output	- NONE
@@ -1112,7 +1127,7 @@ burst_TS6(struct Client *client_p)
 				}
 
 				sprintf(t, "%s%s ", find_channel_status(msptr, 1), use_id(msptr->client_p));
-				
+
 				cur_len += tlen;
 				t += tlen;
 			}
@@ -1219,10 +1234,13 @@ server_estab(struct Client *client_p)
 				  | (ServerConfCompressed(server_p) && zlib_ok == true ? CAP_ZIP : 0)
 				  | (ServerConfTb(server_p) ? CAP_TB : 0));
 
-		sendto_one(client_p, "SERVER %s 1 :%s%s",
-			   me.name,
-			   ConfigServerHide.hidden ? "(H) " : "",
-			   (me.info[0]) ? (me.info) : "IRCers United");
+                const char *ircd_version, *serno;
+                ratbox_version(&ircd_version, &serno, NULL, NULL, NULL);
+
+                sendto_one(client_p, "SERVER %s 1 :%s%s",
+	               me.name,
+	               ConfigServerHide.hidden ? "(H) " : "",
+	               ircd_version);  // Send version instead of me.info
 	}
 
 	if(!rb_set_buffers(client_p->localClient->F, READBUF_SIZE))
@@ -1230,7 +1248,7 @@ server_estab(struct Client *client_p)
 		int saved_errno = errno;
 		sendto_realops_flags(UMODE_DEBUG, L_ALL, "rb_set_buffers failed for server %s:%s", client_p->name, strerror(saved_errno));
 		ilog(L_IOERROR, "rb_set_buffers failed for server %s:%s", log_client_name(client_p, SHOW_IP), strerror(saved_errno));
-	}			    
+	}
 	/* Buffer up the burst before trying to send anything.
 	 * In any case, this saves on system calls, and for ziplinks it
 	 * is required so that we only start sending it when ssld confirms
@@ -1268,6 +1286,9 @@ server_estab(struct Client *client_p)
 	make_server(client_p);
 
 	client_p->serv->caps = client_p->localClient->caps;
+
+        if(client_p->info)
+	client_p->serv->version = rb_strdup(client_p->info);
 
 	if(client_p->localClient->fullcaps)
 	{
@@ -1348,7 +1369,7 @@ server_estab(struct Client *client_p)
 	 ** there are no NICK's to be cancelled...). Of course,
 	 ** if cancellation occurs, all this info is sent anyway,
 	 ** and I guess the link dies when a read is attempted...? --msa
-	 ** 
+	 **
 	 ** Note: Link cancellation to occur at this point means
 	 ** that at least two servers from my fragment are building
 	 ** up connection this other fragment at the same time, it's
