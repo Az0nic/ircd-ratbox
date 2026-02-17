@@ -415,12 +415,7 @@ ms_server(struct Client *client_p, struct Client *source_p, int parc, const char
 	set_server_gecos(target_p, info);
         target_p->serv->version = rb_strdup(info);
 
-        /* DEBUG: Print what we stored */
-        sendto_realops_flags(UMODE_ALL, L_ALL,
-           "DEBUG: Stored version for %s: [%s]",
-           target_p->name,
-           target_p->serv->version ? target_p->serv->version : "NULL");
-
+        
 	target_p->servptr = source_p;
 
 	SetServer(target_p);
@@ -555,12 +550,7 @@ ms_sid(struct Client *client_p, struct Client *source_p, int parc, const char *p
 	set_server_gecos(target_p, parv[4]);
         target_p->serv->version = rb_strdup(parv[4]);
 
-        /* DEBUG: Print what we stored */
-        sendto_realops_flags(UMODE_ALL, L_ALL,
-            "DEBUG: Stored version for %s: [%s]",
-             target_p->name,
-             target_p->serv->version ? target_p->serv->version : "NULL");
-
+        
 	target_p->servptr = source_p;
 	SetServer(target_p);
 
