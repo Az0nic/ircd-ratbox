@@ -1224,13 +1224,10 @@ server_estab(struct Client *client_p)
 				  | (ServerConfCompressed(server_p) && zlib_ok == true ? CAP_ZIP : 0)
 				  | (ServerConfTb(server_p) ? CAP_TB : 0));
 
-                const char *ircd_version, *serno;
-                ratbox_version(&ircd_version, &serno, NULL, NULL, NULL);
-
-                sendto_one(client_p, "SERVER %s 1 :%s%s",
-	               me.name,
-	               ConfigServerHide.hidden ? "(H) " : "",
-	               ircd_version);  // Send version instead of me.info
+        sendto_one(client_p, "SERVER %s 1 :%s%s",
+			   me.name,
+			   ConfigServerHide.hidden ? "(H) " : "",
+			   (me.info[0]) ? (me.info) : "IRCers United");
 	}
 
 	if(!rb_set_buffers(client_p->localClient->F, READBUF_SIZE))
