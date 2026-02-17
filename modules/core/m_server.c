@@ -1277,8 +1277,10 @@ server_estab(struct Client *client_p)
 
 	client_p->serv->caps = client_p->localClient->caps;
 
-        if(client_p->info)
-	client_p->serv->version = rb_strdup(client_p->info);
+	// Get and store the version separately
+	const char *ircd_version, *serno;
+	ratbox_version(&ircd_version, &serno, NULL, NULL, NULL);
+	client_p->serv->version = rb_strdup(ircd_version);
 
 	if(client_p->localClient->fullcaps)
 	{
