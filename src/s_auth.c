@@ -114,6 +114,8 @@ struct _rbl
 	unsigned long queries;
 	unsigned long matches;
 	unsigned long misses;
+	unsigned long cancelled;
+	unsigned long pending;	/* in-flight: queries == matches+misses+cancelled+pending */
 };
 
 typedef enum
@@ -842,6 +844,8 @@ cleanup:
 		query->rbl->matches++;
 	else
 		query->rbl->misses++;
+	/* clear pending before detach: detach may rbl_destroy the zone */
+	query->rbl->pending--;
         rbl_detach_rbl_from_query(query);
 	rb_dlinkDelete(&query->node, &auth->rbl_queries);
         rb_free(query);
@@ -889,9 +893,10 @@ rbl_check_rbls(struct AuthRequest *auth)
 		 * detaches the query which decrements t->refcount, and if the
 		 * zone was rbl_isfreeing() (e.g. a rehash removed it while an
 		 * earlier query still held a ref) reaching refcount==0 at that
-		 * point triggers rbl_destroy(t, false). A post-lookup t->queries
+		 * point triggers rbl_destroy(t, false). A post-lookup counter
 		 * bump would then dereference freed memory. */
 		t->queries++;
+		t->pending++;
 		query->queryid = lookup_hostname(hostbuf, AF_INET, rbl_dns_callback, query);
         }
 
@@ -932,7 +937,7 @@ rbl_dump_stats(rbl_stats_cb cb, void *arg)
 	RB_DLINK_FOREACH(ptr, rbl_lists.head)
 	{
 		rbl_t *t = ptr->data;
-		cb(t->rblname, t->queries, t->matches, t->misses, arg);
+		cb(t->rblname, t->queries, t->matches, t->misses, t->cancelled, t->pending, arg);
 	}
 }
 
@@ -1269,15 +1274,22 @@ static void
 rbl_cancel_lookups(struct AuthRequest *auth)
 {
         rb_dlink_node *ptr, *next;
-        
+
         RB_DLINK_FOREACH_SAFE(ptr, next, auth->rbl_queries.head)
         {
                 rblquery_t *query = ptr->data;
                 cancel_lookup(query->queryid);
+                /* Bump cancelled BEFORE detach: detach decrements refcount
+                 * and may rbl_destroy(t, false) the zone if it was already
+                 * marked freeing. Touching t->cancelled afterwards would
+                 * dereference freed memory. Same shape as t->queries++ in
+                 * rbl_check_rbls(). */
+                query->rbl->cancelled++;
+                query->rbl->pending--;
                 rbl_detach_rbl_from_query(query);
                 rb_dlinkDelete(&query->node, &auth->rbl_queries);
                 rb_free(query);
-        } 
+        }
 }
 
 
