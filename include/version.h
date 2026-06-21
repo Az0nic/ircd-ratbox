@@ -23,7 +23,7 @@
  */
 
 #ifndef PATCHLEVEL
-#define PATCHLEVEL   "ircd-ratbox-3.1.0-rc1"
+#define PATCHLEVEL   "ircd-ratbox-3.1.0-rc2"
 #endif
 
 void ratbox_version(const char **pver, const char **pserno, const char **pgeneration, const char **pplatform, const char **pcreation);
