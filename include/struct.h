@@ -47,6 +47,7 @@ struct Server
 	rb_dlink_list users;
 	int caps;		/* capabilities bit-field */
 	char *fullcaps;
+    char *version;          /* server version string */
 };
 
 struct ZipStats
