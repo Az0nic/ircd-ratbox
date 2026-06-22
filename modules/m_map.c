@@ -101,6 +101,7 @@ dump_map(struct Client *client_p, struct Client *root_p, char *pbuf)
 {
 	int cnt = 0, i = 0, len;
 	rb_dlink_node *ptr;
+	const char *ircd_version, *serno;
 	*pbuf = '\0';
 
 	rb_strlcat(pbuf, root_p->name, IRCD_BUFSIZE);
@@ -110,6 +111,23 @@ dump_map(struct Client *client_p, struct Client *root_p, char *pbuf)
 		rb_strlcat(pbuf, root_p->id, IRCD_BUFSIZE);
 		rb_strlcat(pbuf, "]", IRCD_BUFSIZE);
 	}
+
+    /* Add version info */
+    rb_strlcat(pbuf, " ", IRCD_BUFSIZE);
+
+    if(root_p == &me)
+    {
+            /* Local server - get version from ratbox_version() */
+            ratbox_version(&ircd_version, &serno, NULL, NULL, NULL);
+            rb_strlcat(pbuf, ircd_version, IRCD_BUFSIZE);
+    }
+    else if(root_p->serv && root_p->serv->version)
+    {
+
+            /* Remote server - use stored version */
+            rb_strlcat(pbuf, root_p->serv->version, IRCD_BUFSIZE);
+    }
+	
 	len = strlen(buf);
 	buf[len] = ' ';
 
