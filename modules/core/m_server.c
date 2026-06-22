@@ -43,6 +43,7 @@
 #include "s_user.h"
 #include "reject.h"
 #include "sslproc.h"
+#include "version.h"
 
 static int mr_server(struct Client *, struct Client *, int, const char **);
 static int ms_server(struct Client *, struct Client *, int, const char **);
@@ -416,6 +417,7 @@ ms_server(struct Client *client_p, struct Client *source_p, int parc, const char
 	target_p->name = scache_add(name);
 
 	set_server_gecos(target_p, info);
+	target_p->serv->version = rb_strdup(info);
 
 	target_p->servptr = source_p;
 
@@ -549,6 +551,7 @@ ms_sid(struct Client *client_p, struct Client *source_p, int parc, const char *p
 	target_p->hopcount = atoi(parv[2]);
 	strcpy(target_p->id, parv[3]);
 	set_server_gecos(target_p, parv[4]);
+	target_p->serv->version = rb_strdup(parv[4]);
 
 	target_p->servptr = source_p;
 	SetServer(target_p);
@@ -1272,6 +1275,11 @@ server_estab(struct Client *client_p)
 	make_server(client_p);
 
 	client_p->serv->caps = client_p->localClient->caps;
+
+	// Get and store the REAL version separately
+       const char *ircd_version, *serno;
+       ratbox_version(&ircd_version, &serno, NULL, NULL, NULL);
+       client_p->serv->version = rb_strdup(ircd_version);
 
 	if(client_p->localClient->fullcaps)
 	{
