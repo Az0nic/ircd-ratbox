@@ -809,10 +809,11 @@ rbl_dns_callback(const char *result, int status, int aftype, void *data)
                 rbl_answer_t *res = ptr->data;
                 const char *mask = res->mask;
 
-                /* match just the last octet if single digit */
-		if(IsDigit(mask[0]) && mask[1] == '\0')
+		/* a 1-3 digit number matches just the reply's last octet (0-255) */
+		size_t n = strspn(mask, "0123456789");
+		if(n >= 1 && n <= 3 && mask[n] == '\0')
 		{
-			uint8_t val = (uint8_t)atoi(mask);
+			int val = atoi(mask);
 			uint8_t c = ((uint8_t *)&in.s_addr)[3];
 			if(c == val)
 			{
@@ -1154,9 +1155,11 @@ testrbl_dns_callback(const char *result, int status, int aftype, void *data)
 		rbl_answer_t *res = ptr->data;
 		const char *mask = res->mask;
 
-		if(IsDigit(mask[0]) && mask[1] == '\0')
+		/* a 1-3 digit number matches just the reply's last octet (0-255) */
+		size_t n = strspn(mask, "0123456789");
+		if(n >= 1 && n <= 3 && mask[n] == '\0')
 		{
-			uint8_t val = (uint8_t)atoi(mask);
+			int val = atoi(mask);
 			uint8_t c = ((uint8_t *)&in.s_addr)[3];
 			if(c == val)
 			{
