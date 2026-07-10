@@ -372,6 +372,7 @@ rb_accept_tryaccept(rb_fde_t *F, void *data)
 		{
 			rb_lib_log("rb_accept: Couldn't set FD %d non blocking!", new_F->fd);
 			rb_close(new_F);
+			continue;
 		}
 
 #ifdef RB_IPV6
@@ -885,10 +886,9 @@ rb_close(rb_fde_t *F)
 	{
 		remove_fd(F);
 		ClearFDOpen(F);
+		number_fd--;
+		close(fd);
 	}
-
-	number_fd--;
-	close(fd);
 }
 
 
