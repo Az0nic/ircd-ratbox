@@ -1759,11 +1759,13 @@ close_connection(struct Client *client_p)
 			hash_del_len(HASH_ZCONNID, &client_p->localClient->zconnid, sizeof(client_p->localClient->zconnid), client_p);
 			
 		
-		/* attempt to flush any pending linebufs. Evil, but .. -- adrian */
 
 		if(!IsIOError(client_p)) 
+		{
+			/* attempt to flush any pending linebufs. Evil, but .. -- adrian */
 			send_pop_queue(client_p);
-			
+			rb_setselect(client_p->localClient->F, RB_SELECT_WRITE | RB_SELECT_READ, NULL, NULL);
+		}
 		if(!IsDelayExit(client_p) || IsIOError(client_p))
 		{
 			/* keep the socket open if we're delaying the disconnect */
