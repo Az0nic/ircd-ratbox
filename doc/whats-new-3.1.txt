@@ -21,7 +21,12 @@ Config
    option
  o CERTFP support for connect {}, operator {} and auth{}.  CERTFP acts as an
    additional gate to these blocks and does not replace password/challenge.
-
+ o anti_away_flood rate-limits local /AWAY changes (max_away_changes
+   within max_away_time seconds; opers exempt). Defaults to yes.
+ o anti_nick_flood now defaults to yes (was no). If your ircd.conf omits
+   it you now get nick-flood protection by default; set
+   anti_nick_flood = no; to keep the old behaviour.
+   
 Misc
 ----
  o TESTRBL <ip> (oper-only) check of a single IPv4 or IPv6 address
