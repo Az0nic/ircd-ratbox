@@ -98,13 +98,23 @@ Monitoring at runtime
 
 emits one line per configured zone:
 
-    n <zone> queries=N matches=N misses=N
+    n <zone> queries=N matches=N misses=N cancelled=N pending=N
 
-Watch the queries counter advance under normal load and the
-matches/misses ratio settle. A zone with all `misses` and zero
-`matches` over a long window is either misconfigured (wrong
-zone name, wrong match values) or genuinely sees no listed
-traffic on your server.
+Every dispatched lookup sits in exactly one bucket, so the four
+outcome counters always sum back to queries:
+
+    queries = matches + misses + cancelled + pending
+
+  queries    - lookups dispatched (one per connecting IP per zone)
+  matches    - replies that hit a configured match rule
+  misses     - replies with no match (NXDOMAIN, resolver error, unlisted)
+  cancelled  - lookups dropped before a reply (client left / auth timed out)
+  pending    - lookups still in flight
+
+A zone with all 'misses' and zero 'matches' over a long window is
+either misconfigured (wrong zone name, wrong match values) or
+genuinely sees no listed traffic on your server. A persistently
+high 'pending' count means the zone is slow or unreachable.
 
 
 Converting a HOPM dnsbl block to ircd-ratbox
