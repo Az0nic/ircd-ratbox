@@ -32,7 +32,7 @@
 #include "ratbox_lib.h"
 
 #if !defined(HAVE_OPENSSL) && !defined(HAVE_GNUTLS) && !defined(HAVE_MBEDTLS) && !defined(HAVE_ARC4RANDOM)
-#include <arc4random.h>
+#include "rb_arc4random.h"
 #include <errno.h>
 
 #ifdef HAVE_GETRUSAGE
@@ -188,7 +188,7 @@ void
 rb_arc4random_addrandom(uint8_t *dat, int datlen)
 {
 	if(!rs_initialized)
-		arc4random_stir();
+		rb_arc4random_stir();
 	arc4_addrandom(&rs, dat, datlen);
 }
 
@@ -196,7 +196,7 @@ uint32_t
 rb_arc4random(void)
 {
 	if(!rs_initialized)
-		arc4random_stir();
+		rb_arc4random_stir();
 	return arc4_getword(&rs);
 }
 
