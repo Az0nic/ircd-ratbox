@@ -76,6 +76,9 @@ untabify(char *dest, const char *src, size_t destlen)
 	const char *s = src;
 	char *d = dest;
 
+	if(destlen == 0)
+		return 0;
+
 	while(*s != '\0' && x < destlen - 1)
 	{
 		if(*s == '\t')
