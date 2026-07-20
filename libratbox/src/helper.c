@@ -84,6 +84,12 @@ rb_helper_child(rb_helper_cb * read_cb, rb_helper_cb * error_cb, log_cb * ilog,
 
 	helper->ifd = rb_open(ifd, RB_FD_PIPE, "incoming connection");
 	helper->ofd = rb_open(ofd, RB_FD_PIPE, "outgoing connection");
+
+	if(helper->ifd == NULL || helper->ofd == NULL)
+	{
+		return NULL;
+	}
+
 	rb_set_nb(helper->ifd);
 	rb_set_nb(helper->ofd);
 
