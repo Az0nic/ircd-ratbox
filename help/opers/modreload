@@ -1,0 +1,10 @@
+MODRELOAD
+
+-- Reload a single module into the ircd
+The specified module is unloaded and then reloaded.
+Useful for applying changes without restarting the server.
+- Requires Oper Priv: A
+
+Syntax: MODRELOAD <module>
+
+Example: /MODRELOAD m_nick.so
